@@ -1187,8 +1187,10 @@ function buildChips(){
           };
           if(e==='ACTIVO'){
             byTerc[t].factA+=f;
-            // Contar ID único — si hay ID lo agrega al Set, si no, cuenta la fila
-            if(idFact) byTerc[t].idsA.add(idFact); else byTerc[t].svcA++;
+            // Contar solo IDs con facturación > 0
+            if(f>0){
+              if(idFact) byTerc[t].idsA.add(idFact); else byTerc[t].svcA++;
+            }
             if(cli) byTerc[t].clientes.add(cli);
             if(det) byTerc[t].detalle[det]=(byTerc[t].detalle[det]||0)+1;
             if(tipo.includes('FIBRA')) byTerc[t].tipo.FIBRA_OSCURA++;
@@ -1201,7 +1203,10 @@ function buildChips(){
             byTerc[t].cliente[tcli].svc++; byTerc[t].cliente[tcli].fact+=f;
           } else if(e==='CT'||(e==='CANCELADO'&&f>0)){
             byTerc[t].factCT+=f;
-            if(idFact) byTerc[t].idsCT.add(idFact); else byTerc[t].svcCT++;
+            // CT: también solo contar IDs con facturación > 0
+            if(f>0){
+              if(idFact) byTerc[t].idsCT.add(idFact); else byTerc[t].svcCT++;
+            }
           }
         });
 
