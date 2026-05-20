@@ -917,8 +917,8 @@ function buildChips(){
   // El Sheet debe estar publicado: Archivo → Compartir → Publicar en la web
   // ═══════════════════════════════════════════════════════════════
   const GS_CONFIG = {
-    SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',   // ← reemplazar con tu ID
-    enabled: true,                  // ← cambiar a true cuando configures el Sheet
+    SHEET_ID: 'TU_SHEET_ID_AQUI',   // ← reemplazar con tu ID
+    enabled: false,                  // ← cambiar a true cuando configures el Sheet
     refreshMinutes: 5,               // auto-refresh cada 5 minutos
   };
 
@@ -1133,7 +1133,25 @@ function buildChips(){
           return;
         }
 
-        const factCol    = headers.find(h=>h.toUpperCase().includes('FACTURACIÓN')||h.toUpperCase().includes('FACTURACION'));
+        // Detectar columna de facturación por nombre Y por rango de valores
+        let factCol = headers.find(h=>h.toUpperCase().includes('FACTURACIÓN')||h.toUpperCase().includes('FACTURACION')||h.toUpperCase().includes('FACTURA'));
+        if(factCol && rows.length>0){
+          // Verificar que los valores estén en rango esperado (10 a 200000)
+          const testVals = rows.slice(0,5).map(r=>cleanNum(r[factCol])).filter(v=>v>0);
+          const allInRange = testVals.every(v=>v>=10 && v<=200000);
+          if(!allInRange && testVals.length>0){
+            // Buscar columna alternativa con valores en rango correcto
+            const altCol = headers.find(h=>{
+              if(h===factCol) return false;
+              const vals=rows.slice(0,5).map(r=>cleanNum(r[h])).filter(v=>v>0);
+              return vals.length>0 && vals.every(v=>v>=10&&v<=200000);
+            });
+            if(altCol){
+              console.log('[GTN Sheets] factCol corregido: '+factCol+' → '+altCol);
+              factCol=altCol;
+            }
+          }
+        }
         const tercCol    = headers.find(h=>h.toUpperCase().includes('TERCERIZADORA'));
         const estadoCol  = headers.find(h=>h.toUpperCase().includes('ESTADO'));
         const clienteCol = headers.find(h=>h.toUpperCase().includes('CLIENTE'));
@@ -1178,9 +1196,15 @@ function buildChips(){
             D[t].cli    = d.clientes.size||d.svcA;
           });
           console.log('[GTN Sheets] Abr-26 actualizado desde hoja real');
-          // Log del primer valor raw de FACTURACIÓN para diagnóstico
+          // Log diagnóstico: mostrar todas las columnas de la primera fila con TELEFONICA ACTIVO
           const sampleRow=rows.find(r=>normTerc(r[tercCol])==='TELEFONICA'&&normEstado(r[estadoCol])==='ACTIVO');
-          if(sampleRow) console.log('[GTN Sheets] RAW TELEFONICA fact value:', JSON.stringify(sampleRow[factCol]));
+          if(sampleRow){
+            console.log('[GTN Sheets] RAW TELEFONICA fact col='+factCol+':', JSON.stringify(sampleRow[factCol]));
+            console.log('[GTN Sheets] ALL COLS TELEFONICA:', JSON.stringify(sampleRow));
+          } else if(rows[0]){
+            console.log('[GTN Sheets] Primera fila:', JSON.stringify(rows[0]));
+            console.log('[GTN Sheets] Headers:', JSON.stringify(Object.keys(rows[0])));
+          }
           console.log('[GTN Sheets] Sample Abr-26 data:', JSON.stringify(Object.fromEntries(
             ALL_TERCS.filter(t=>D[t]&&D[t].fact>0).map(t=>[t,{fact:D[t].fact,svc:D[t].svcA}])
           )));
