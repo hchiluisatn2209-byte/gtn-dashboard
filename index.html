@@ -649,18 +649,19 @@ function buildTrend(){
   const metaAbrEl=document.querySelector('[data-meta="abr"]');
   if(metaAbrEl) metaAbrEl.textContent=ALL_MESES[activeMesAbsIdx];
   document.getElementById('metaProm').textContent=fmtk(promV);
-  // Label dinámico según mes seleccionado
+  // Label dinámico según mes seleccionado — usar ALL_MESES con índice absoluto
   const metaAbrL=document.querySelector('.tm-l[data-meta="abr"]');
-  if(metaAbrL) metaAbrL.textContent=MESES[selIdx];
+  if(metaAbrL) metaAbrL.textContent=ALL_MESES[activeMesAbsIdx];
   const metaDiffL=document.querySelector('.tm-l[data-meta="diff"]');
-  const prevLabel=selIdx>0?MESES[selIdx-1]:'—';
+  const prevAbsIdx=activeMesAbsIdx>0?activeMesAbsIdx-1:activeMesAbsIdx;
+  const prevLabel=activeMesAbsIdx>0?ALL_MESES[prevAbsIdx]:'—';
   if(metaDiffL) metaDiffL.textContent='Var. vs '+prevLabel;
   const de=document.getElementById('metaDiff'),dp=document.getElementById('metaDiffPct');
   de.textContent=(dv>=0?'▲ ':'▼ ')+fmtk(Math.abs(dv));de.style.color=dv>=0?C.verde:C.naranja;
   dp.textContent=(dv>=0?'+':'')+dpct.toFixed(2)+'%';dp.style.color=de.style.color;
-  // Actualizar header corte
+  // Actualizar header corte con nombre de mes absoluto
   const cd=document.getElementById('corteDate');
-  if(cd) cd.textContent=MESES[selIdx];
+  if(cd) cd.textContent=ALL_MESES[activeMesAbsIdx];
 
   trendChart=new Chart(ctx,{type:'bar',data:{labels:win.labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:true,layout:{padding:{top:36}},
@@ -808,7 +809,7 @@ function buildBarList(){
       <div class="bar-meta"><span class="bar-name">${t}</span>
         <div class="bar-stats">
           <span class="bar-fact" style="color:${factV>0?col:'#9BBCD8'}">${fmt(factV)}</span>
-          <span class="bar-svc">${factV===0?'Sin facturación '+MESES[miB]:svcV+' svc'}</span>
+          <span class="bar-svc">${factV===0?'Sin facturación '+ALL_MESES[miB]:svcV+' svc'}</span>
         </div>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
@@ -855,7 +856,7 @@ function updateKPIs(){
   const abrF=_tv.length?_tv[_tv.length-1]:0;
   const marF=_tv.length>1?_tv[_tv.length-2]:abrF;
   const diffF=abrF-marF,diffPct=marF>0?diffF/marF*100:0;
-  const prevLbl=activeMesIdx>0?MESES[activeMesIdx-1]:'—';
+  const prevLbl=activeMesAbsIdx>0?ALL_MESES[activeMesAbsIdx-1]:'—';
   const badge=document.getElementById('kpiDiffBadge'),pct=document.getElementById('kpiDiffPct');
   if(badge){
     const cls=diffF>=0?'diff-pos':'diff-neg';
@@ -905,8 +906,8 @@ function buildChips(){
   // Reset
   document.getElementById('resetBtn').addEventListener('click',()=>{
     activeTerc=new Set(ALL_TERCS);
-    activeMesIdx=12;
-    sel.value=12;
+    activeMesAbsIdx=24; // Abr-26 = índice 24 en ALL_MESES
+    sel.value=24;
     document.querySelectorAll('#filterTerc .chip').forEach(c=>c.classList.add('active'));
     applyFilters();
   });
@@ -1009,21 +1010,22 @@ function buildChips(){
     if(!GS_CONFIG.enabled || GS_CONFIG.SHEET_ID==='TU_SHEET_ID_AQUI') return;
     showLoadingBadge('Conectando con Google Sheets...');
 
-    // Hojas mensuales del archivo de gestión (mismo nombre que las pestañas del Excel)
+    // Hojas mensuales del archivo de gestión (nombres EXACTOS de las pestañas de Google Sheets)
+    // Orden: índice 0 = Abr-25 (BASE_ABS=12 en ALL_MESES), índice 12 = Abr-26
     const SHEET_NAMES = [
-      {key:'2025-04', name:'ABRIL 2025'},
-      {key:'2025-05', name:'MAYO 2025'},
-      {key:'2025-06', name:'JUNIO 2025'},
-      {key:'2025-07', name:'PROYECCION -JULIO 2025'},
-      {key:'2025-08', name:'PROYECCION -AGOSTO 2025'},
-      {key:'2025-09', name:'PROYECCION -SEPTIEMBRE 2025'},
-      {key:'2025-10', name:'PROYECCION -OCTUBRE 2025'},
-      {key:'2025-11', name:'PROYECCION -NOVIEMBRE 2025'},
-      {key:'2025-12', name:'PROYECCION -DICIEMBRE 2025'},
-      {key:'2026-01', name:'PROYECCION -ENERO 2026'},
-      {key:'2026-02', name:'PROYECCION -FEBRERO 2026'},
-      {key:'2026-03', name:'PROYECCION -MARZO 2026'},
-      {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok'},
+      {key:'2025-04', name:'PROYECCION -ABRIL 2025',    altNames:['ABRIL 2025','PROYECCIÓN -ABRIL 2025']},
+      {key:'2025-05', name:'PROYECCION -MAYO 2025',     altNames:['MAYO 2025','PROYECCIÓN -MAYO 2025']},
+      {key:'2025-06', name:'PROYECCION -JUNIO 2025',    altNames:['JUNIO 2025','PROYECCIÓN -JUNIO 2025']},
+      {key:'2025-07', name:'PROYECCION -JULIO 2025',    altNames:['JULIO 2025','PROYECCIÓN -JULIO 2025']},
+      {key:'2025-08', name:'PROYECCION -AGOSTO 2025',   altNames:['AGOSTO 2025','PROYECCIÓN -AGOSTO 2025']},
+      {key:'2025-09', name:'PROYECCION -SEPTIEMBRE 2025',altNames:['SEPTIEMBRE 2025','PROYECCIÓN -SEPTIEMBRE 2025']},
+      {key:'2025-10', name:'PROYECCION -OCTUBRE 2025',  altNames:['OCTUBRE 2025','PROYECCIÓN -OCTUBRE 2025']},
+      {key:'2025-11', name:'PROYECCION -NOVIEMBRE 2025',altNames:['NOVIEMBRE 2025','PROYECCIÓN -NOVIEMBRE 2025']},
+      {key:'2025-12', name:'PROYECCION -DICIEMBRE 2025',altNames:['DICIEMBRE 2025','PROYECCIÓN -DICIEMBRE 2025']},
+      {key:'2026-01', name:'PROYECCION -ENERO 2026',    altNames:['ENERO 2026','PROYECCIÓN -ENERO 2026']},
+      {key:'2026-02', name:'PROYECCION -FEBRERO 2026',  altNames:['FEBRERO 2026','PROYECCIÓN -FEBRERO 2026']},
+      {key:'2026-03', name:'PROYECCION -MARZO 2026',    altNames:['MARZO 2026','PROYECCIÓN -MARZO 2026']},
+      {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok',altNames:['PROYECCION - ABRIL 2026 ok','ABRIL 2026','PROYECCIÓN -ABRIL 2026']},
     ];
 
     const TERC_MAP = {
@@ -1074,22 +1076,30 @@ function buildChips(){
       return parseFloat(str)||0;
     }
 
-    async function fetchSheet(name){
-      const urls=[
-        `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(name)}`,
-        `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`,
-      ];
-      for(const url of urls){
-        try{
-          const r=await fetch(url,{mode:'cors',credentials:'omit'});
-          if(r.ok){
-            const text=await r.text();
-            if(text.trim().startsWith('<!')) continue; // recibió HTML de error
-            return parseCSV(text);
-          }
-        }catch(e){continue;}
+    async function fetchSheet(sheetObj){
+      // Intentar con nombre principal + nombres alternativos
+      const namesToTry = [sheetObj.name, ...(sheetObj.altNames||[])];
+      for(const name of namesToTry){
+        const urls=[
+          `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(name)}`,
+          `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`,
+        ];
+        for(const url of urls){
+          try{
+            const r=await fetch(url,{mode:'cors',credentials:'omit'});
+            if(r.ok){
+              const text=await r.text();
+              if(text.trim().startsWith('<!')) continue; // recibió HTML de error
+              const rows=parseCSV(text);
+              if(rows.length>0){
+                console.log(`[GTN Sheets] ✓ Hoja cargada: "${name}" → ${rows.length} filas`);
+                return rows;
+              }
+            }
+          }catch(e){continue;}
+        }
       }
-      console.warn('[GTN Sheets] Hoja no encontrada:',name);
+      console.warn('[GTN Sheets] ⚠ Hoja no encontrada:',sheetObj.name,'(y alternativos:', sheetObj.altNames,')');
       return [];
     }
 
@@ -1100,7 +1110,7 @@ function buildChips(){
       // ── Leer todas las hojas mensuales en paralelo
       showLoadingBadge('Leyendo '+SHEET_NAMES.length+' hojas...');
       const sheetData = await Promise.all(
-        SHEET_NAMES.map(s=>fetchSheet(s.name).then(rows=>({key:s.key,rows})))
+        SHEET_NAMES.map(s=>fetchSheet(s).then(rows=>({key:s.key,rows})))
       );
 
       // ── Procesar cada hoja → acumular en matrices temporales
@@ -1111,13 +1121,9 @@ function buildChips(){
 
       sheetData.forEach(({key,rows},sheetIdx)=>{
         const absIdx = BASE_ABS + sheetIdx; // posición en el array de 25
-        if(!rows.length){ // hoja vacía → mantener datos locales
-          ALL_TERCS.forEach(t=>{
-            tmpFact[t][sheetIdx] = FACT_MES[t]?FACT_MES[t][absIdx]:0;
-            tmpSvc[t][sheetIdx]  = SVC_MES[t]? SVC_MES[t][absIdx]:0;
-            tmpCli[t][sheetIdx]  = CLI_MES[t]? CLI_MES[t][absIdx]:0;
-            tmpCT[t][sheetIdx]   = FACT_CT_MES[t]?FACT_CT_MES[t][absIdx]:0;
-          });
+        if(!rows.length){ // hoja vacía → dejar undefined (no sobreescribir datos locales)
+          console.warn(`[GTN Sheets] Hoja vacía en sheetIdx=${sheetIdx} (${SHEET_NAMES[sheetIdx]?.name}), manteniendo datos locales`);
+          // NO asignar nada: tmpFact[t][sheetIdx] queda undefined → no sobreescribe
           return;
         }
 
@@ -1128,15 +1134,18 @@ function buildChips(){
         const hasFact    = headers.some(h=>h.toUpperCase().includes('FACTURACIÓN')||h.toUpperCase().includes('FACTURACION'));
         const hasCliente = headers.some(h=>h.toUpperCase().includes('CLIENTE'));
 
-        if(!hasTerc||!hasEstado||!hasFact){ // estructura no reconocida
-          ALL_TERCS.forEach(t=>{
-            tmpFact[t][sheetIdx]=FACT_MES[t]?FACT_MES[t][absIdx]:0;
-            tmpSvc[t][sheetIdx] =SVC_MES[t]? SVC_MES[t][absIdx]:0;
-            tmpCli[t][sheetIdx] =CLI_MES[t]? CLI_MES[t][absIdx]:0;
-            tmpCT[t][sheetIdx]  =FACT_CT_MES[t]?FACT_CT_MES[t][absIdx]:0;
-          });
+        if(!hasTerc||!hasEstado||!hasFact){ // estructura no reconocida → no sobreescribir
+          console.warn(`[GTN Sheets] Estructura no reconocida en hoja "${SHEET_NAMES[sheetIdx]?.name}". Headers:`, headers.slice(0,8));
           return;
         }
+
+        // Diagnóstico: mostrar primeras 2 filas para ver qué columnas hay
+        const mesNombreDiag = ALL_MESES[BASE_ABS+sheetIdx]||SHEET_NAMES[sheetIdx]?.name;
+        console.group(`[GTN] Hoja "${mesNombreDiag}" — ${rows.length} filas`);
+        console.log('Headers:', headers);
+        console.log('Fila 0:', rows[0]);
+        console.log('Fila 1:', rows[1]);
+        console.groupEnd();
 
         // Detectar columna FACTURACIÓN exacta (evitar "NUEVO ID FACTURACIÓN" u otras)
         // Prioridad: coincidencia exacta > empieza con > contiene
@@ -1223,14 +1232,31 @@ function buildChips(){
         }
       });
 
-      // ── Escribir en las matrices globales (solo posiciones 12-24 = datos reales del Sheet)
+      // ── Diagnóstico: mostrar facturación total calculada por hoja ──
+      console.group('[GTN Sheets] Facturación por hoja (desde Google Sheets)');
+      sheetData.forEach(({key,rows},i)=>{
+        const absIdx=BASE_ABS+i;
+        const mesNombre=ALL_MESES[absIdx]||key;
+        if(!rows.length){
+          console.log(`  ${mesNombre} → ⚠ sin datos (usando local)`);
+          return;
+        }
+        const totalFact=ALL_TERCS.reduce((s,t)=>s+(tmpFact[t][i]||0),0);
+        const totalSvc =ALL_TERCS.reduce((s,t)=>s+(tmpSvc[t][i]||0),0);
+        console.log(`  ${mesNombre} → $${totalFact.toFixed(2)} | ${totalSvc} svc | ${rows.length} filas`);
+      });
+      console.groupEnd();
+
+      // ── Escribir en las matrices globales SOLO si la hoja tiene datos reales ──
+      // Usar undefined como centinela: si tmpFact[t][i] es undefined → hoja vacía → no sobreescribir
       ALL_TERCS.forEach(t=>{
         for(let i=0;i<SHEET_NAMES.length;i++){
           const absIdx=BASE_ABS+i;
-          if(FACT_MES[t])    FACT_MES[t][absIdx]    = tmpFact[t][i]??FACT_MES[t][absIdx];
-          if(SVC_MES[t])     SVC_MES[t][absIdx]     = tmpSvc[t][i] ??SVC_MES[t][absIdx];
-          if(CLI_MES[t])     CLI_MES[t][absIdx]     = tmpCli[t][i] ??CLI_MES[t][absIdx];
-          if(FACT_CT_MES[t]) FACT_CT_MES[t][absIdx] = tmpCT[t][i]  ??FACT_CT_MES[t][absIdx];
+          // Solo sobreescribir si la hoja tenía filas (tmpFact[t][i] !== undefined)
+          if(tmpFact[t][i]!==undefined && FACT_MES[t])    FACT_MES[t][absIdx]    = tmpFact[t][i];
+          if(tmpSvc[t][i] !==undefined && SVC_MES[t])     SVC_MES[t][absIdx]     = tmpSvc[t][i];
+          if(tmpCli[t][i] !==undefined && CLI_MES[t])     CLI_MES[t][absIdx]     = tmpCli[t][i];
+          if(tmpCT[t][i]  !==undefined && FACT_CT_MES[t]) FACT_CT_MES[t][absIdx] = tmpCT[t][i];
         }
       });
 
@@ -1251,7 +1277,14 @@ function buildChips(){
       applyFilters();
       const now=new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
       hideBadge(true, now);
-      console.log('[GTN Sheets] ✓ Datos actualizados. Corte:', ALL_MESES[activeMesAbsIdx]);
+      // Resumen diagnóstico en consola
+      const loaded=sheetData.filter(s=>s.rows.length>0).length;
+      const empty=sheetData.filter(s=>s.rows.length===0).length;
+      console.log(`[GTN Sheets] ✓ Datos actualizados. Corte: ${ALL_MESES[activeMesAbsIdx]} | Hojas cargadas: ${loaded}/${SHEET_NAMES.length} | Vacías/fallidas: ${empty}`);
+      if(empty>0){
+        const emptyKeys=sheetData.filter(s=>s.rows.length===0).map((_,i)=>SHEET_NAMES[i]?.name||'?');
+        console.warn('[GTN Sheets] Hojas sin datos (usando valores locales):', emptyKeys);
+      }
 
     }catch(err){
       console.error('[GTN Sheets] Error:', err.message||err);
@@ -1277,15 +1310,17 @@ function initDashboard(){
   showLoadingBadge('Cargando datos desde Google Sheets...');
   // Cargar datos del Sheet antes de renderizar
   loadFromSheets().then(()=>{
-    // Una vez cargados los datos, construir chips del selector de mes
+    // Poblar el selector de mes con todos los meses con datos (Abr-25 a Abr-26 = índices 12-24)
     const sel=document.getElementById('mesSelect');
     if(sel && sel.options.length===0){
-      ALL_MESES.forEach((m,i)=>{
+      // Solo mostrar meses desde Abr-25 (BASE_ABS=12) hasta el último con datos
+      const BASE_ABS=12;
+      for(let i=BASE_ABS; i<ALL_MESES.length; i++){
         const opt=document.createElement('option');
-        opt.value=i; opt.textContent=m;
+        opt.value=i; opt.textContent=ALL_MESES[i];
         if(i===activeMesAbsIdx) opt.selected=true;
         sel.appendChild(opt);
-      });
+      }
     }
     startAutoRefresh();
   });
