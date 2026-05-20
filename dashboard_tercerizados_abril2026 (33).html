@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Ejecutivo – Tercerizados | GTN Proyectos e Implementación</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+  :root{
+    --navy:#1B3A70;--navy-dark:#0e2248;--navy-mid:#1a3f7a;
+    --turquesa:#00B0F0;--turquesa2:#00B5CB;--magenta:#FF44B0;
+    --naranja:#FF6F42;--morado:#8B6FE8;--morado2:#AA7FD0;
+    --amarillo:#FFA700;--azul-c:#6EBEEB;--azul-c2:#64B4F5;
+    --verde:#34D399;--naranja2:#FF9A44;
+    --muted:#9BBCD8;--card-bg:#1a3f7a;--border:rgba(0,176,240,0.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Barlow',sans-serif;background:linear-gradient(160deg,#0e2248 0%,#122755 45%,#1B3A70 100%);background-attachment:fixed;color:#fff;min-height:100vh;overflow-x:hidden}
+  header{background:linear-gradient(90deg,#0a1b3d,#1B3A70 70%,#1f4485);border-bottom:3px solid var(--turquesa);padding:16px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 4px 28px rgba(0,0,0,.55)}
+  .header-left{display:flex;align-items:center;gap:16px}
+  .logo-badge{width:48px;height:48px;background:linear-gradient(135deg,var(--turquesa),#5D34B0);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#fff;letter-spacing:1px;box-shadow:0 4px 16px rgba(0,176,240,.45)}
+  .header-titles h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:21px;letter-spacing:2px;text-transform:uppercase;line-height:1}
+  .header-titles p{font-size:10px;color:var(--turquesa);letter-spacing:2.5px;text-transform:uppercase;margin-top:4px}
+  .header-right{text-align:right}
+  .corte-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+  .corte-date{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:var(--amarillo)}
+  .filter-bar{background:rgba(11,29,62,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 36px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:71px;z-index:190}
+  .filter-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--turquesa);font-weight:600;white-space:nowrap}
+  .filter-group{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,0.1);transition:all .18s;user-select:none;white-space:nowrap;background:rgba(255,255,255,0.05);color:var(--muted)}
+  .chip.active{color:#fff;border-color:var(--chip-col);background:rgba(255,255,255,0.14)}
+  .chip .dot-chip{width:7px;height:7px;border-radius:50%;background:var(--chip-col);flex-shrink:0}
+  .filter-divider{width:1px;height:26px;background:var(--border);flex-shrink:0}
+  .filter-reset{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:5px 12px;transition:all .18s;white-space:nowrap}
+  .filter-reset:hover{color:#fff;border-color:var(--turquesa)}
+  .filter-info{font-size:10px;color:var(--muted);margin-left:auto;max-width:300px;text-align:right}
+  .mes-select-wrap{display:flex;align-items:center;gap:8px}
+  .mes-select{
+    background:rgba(255,255,255,0.07);border:1.5px solid rgba(0,176,240,0.35);
+    color:#fff;border-radius:20px;padding:5px 32px 5px 14px;font-size:11px;font-weight:600;
+    font-family:'Barlow',sans-serif;cursor:pointer;outline:none;
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239BBCD8'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;
+    transition:border-color .18s;
+  }
+  .mes-select:hover{border-color:var(--turquesa)}
+  .mes-select option{background:#1a3f7a;color:#fff}
+  .mes-badge{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+    letter-spacing:1px;text-transform:uppercase;
+    background:rgba(0,176,240,0.15);border:1px solid rgba(0,176,240,0.35);
+    color:var(--turquesa);padding:3px 10px;border-radius:20px;white-space:nowrap;
+  }
+  main{padding:22px 36px 44px;max-width:1440px;margin:0 auto}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--turquesa);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .kpi-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;animation:fadeUp .5s ease both}
+  .kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}.kpi-card:nth-child(4){animation-delay:.20s}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.45)}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--ak,var(--turquesa))}
+  .kpi-card::after{content:'';position:absolute;width:90px;height:90px;border-radius:50%;background:var(--ak,var(--turquesa));opacity:.07;right:-22px;top:-22px}
+  .kpi-card.mag{--ak:var(--magenta)}.kpi-card.nar{--ak:var(--naranja)}.kpi-card.mor{--ak:var(--morado)}
+  .kpi-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;line-height:1;color:#fff}
+  .kpi-value.turq{color:var(--turquesa)}.kpi-value.amar{color:var(--amarillo)}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
+  .kpi-icon{position:absolute;bottom:12px;right:15px;font-size:26px;opacity:.15}
+  .kpi-desglose{display:flex;flex-direction:column;gap:3px;margin-top:7px}
+  .kpi-desglose span{font-size:11px;line-height:1.3}
+  .kpi-diff{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .diff-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
+  .diff-pct{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px}
+  .diff-pos{background:rgba(52,211,153,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.3)}
+  .diff-neg{background:rgba(255,111,66,0.15);color:#FF6F42;border:1px solid rgba(255,111,66,0.3)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:22px}
+  .grid-trend{display:grid;grid-template-columns:2.2fr 1fr;gap:20px;margin-bottom:22px}
+  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:22px;overflow:hidden;animation:fadeUp .5s ease both;animation-delay:.25s}
+  .card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--turquesa),#5D34B0);flex-shrink:0}
+  .trend-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .tm{background:rgba(0,176,240,0.07);border-radius:8px;padding:10px 12px}
+  .tm-l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .tm-v{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px}
+  .trend-estados{display:flex;align-items:center;margin-top:10px;padding:10px 14px;background:rgba(0,176,240,0.05);border:1px solid var(--border);border-radius:8px}
+  .te-item{display:flex;align-items:center;gap:8px;flex:1}
+  .te-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .te-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .te-val{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff;margin-left:auto}
+  .te-svc{font-size:10px;color:var(--muted);margin-left:6px;white-space:nowrap}
+  .te-sep{width:1px;height:28px;background:var(--border);margin:0 12px;flex-shrink:0}
+  .nota-box{display:flex;align-items:flex-start;gap:10px;margin-top:10px;padding:11px 14px;border-radius:8px}
+  .nota-box.orange{background:rgba(255,154,68,0.08);border:1px solid rgba(255,154,68,0.28);border-left:4px solid var(--naranja2)}
+  .nota-box.red{background:rgba(255,111,66,0.08);border:1px solid rgba(255,111,66,0.28);border-left:4px solid var(--naranja)}
+  .nota-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+  .nota-text{font-size:10.5px;color:#C8D8EA;line-height:1.55}
+  .nota-text strong{font-weight:600}
+  .nota-box.orange .nota-text strong{color:var(--naranja2)}
+  .nota-box.red .nota-text strong{color:var(--naranja)}
+  .bar-list{display:flex;flex-direction:column;gap:10px}
+  .bar-row{display:flex;flex-direction:column;gap:4px;transition:opacity .25s}
+  .bar-row.hidden{opacity:.15;pointer-events:none}
+  .bar-meta{display:flex;justify-content:space-between;align-items:baseline}
+  .bar-name{font-size:12px;color:#fff;font-weight:500}
+  .bar-stats{display:flex;gap:10px;align-items:baseline}
+  .bar-fact{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700}
+  .bar-svc{color:var(--muted);font-size:11px}
+  .bar-track{height:6px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.22,.68,0,1.2)}
+  .donut-wrap{position:relative;display:flex;justify-content:center;align-items:center;height:160px}
+  .donut-center{position:absolute;text-align:center;pointer-events:none}
+  .donut-center .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;color:#fff;line-height:1}
+  .donut-center .small{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .legend-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .legend-item{display:flex;align-items:center;gap:9px;font-size:11px}
+  .legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+  .legend-name{color:var(--muted);flex:1}
+  .legend-val{color:#fff;font-weight:600;font-size:12px}
+  .legend-pct{color:var(--muted);font-size:10px;min-width:34px;text-align:right}
+  .client-list{display:flex;flex-direction:column}
+  .client-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .client-row:last-child{border-bottom:none}
+  .client-rank{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--turquesa);width:20px;text-align:center;flex-shrink:0}
+  .client-name{flex:1;font-size:11px;color:#fff;line-height:1.3}
+  .client-svc{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--amarillo);min-width:32px;text-align:right}
+  footer{text-align:center;padding:16px 36px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes gsPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="logo-badge">GTN</div>
+    <div class="header-titles">
+      <h1>Dashboard Ejecutivo · Tercerizados</h1>
+      <p>Proyectos e Implementación · Facturación</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="corte-label">Corte</div>
+    <div class="corte-date" id="corteDate">Abril 2026</div>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <span class="filter-label">Tercerizadora</span>
+  <div class="filter-group" id="filterTerc"></div>
+  <div class="filter-divider"></div>
+  <div class="mes-select-wrap">
+    <span class="filter-label" style="font-size:9px">Corte</span>
+    <select class="mes-select" id="mesSelect"></select>
+  </div>
+  <div class="filter-divider"></div>
+  <span class="filter-reset" id="resetBtn">✕ Limpiar filtros</span>
+  <span class="filter-info" id="filterInfo">Todas · ACTIVO + CANCELADO EN TELCOS</span>
+</div>
+
+<main>
+  <div class="section-title">Indicadores Clave</div>
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Facturación · Activo + Cancelado en Telcos</div>
+      <div class="kpi-value turq" id="kpiFact">—</div>
+      <div class="kpi-desglose">
+        <span style="color:var(--verde)">● Activo: <strong id="kpiFactActivo">—</strong></span>
+        <span style="color:var(--naranja2)">● Cancelado en Telcos: <strong id="kpiFactCancelado">—</strong></span>
+      </div>
+      <div class="kpi-diff">
+        <span class="diff-badge" id="kpiDiffBadge">— vs Mar-26</span>
+        <span class="diff-pct" id="kpiDiffPct">—</span>
+      </div>
+      <div class="kpi-icon">💲</div>
+    </div>
+    <div class="kpi-card mag">
+      <div class="kpi-label">Servicios del Corte</div>
+      <div class="kpi-value" id="kpiSvc">—</div>
+      <div class="kpi-sub" id="kpiSvcSub">Activos + Cancelado en Telcos</div>
+      <div class="kpi-icon">📡</div>
+    </div>
+    <div class="kpi-card nar">
+      <div class="kpi-label">Clientes del Corte</div>
+      <div class="kpi-value amar" id="kpiClients">—</div>
+      <div class="kpi-sub" id="kpiClientsSub">Clientes activos en el corte</div>
+      <div class="kpi-icon">🏢</div>
+    </div>
+    <div class="kpi-card mor">
+      <div class="kpi-label">Tercerizadoras Activas</div>
+      <div class="kpi-value" id="kpiTerc">—</div>
+      <div class="kpi-sub" id="kpiTercSub">Con facturación en el corte</div>
+      <div class="kpi-icon">🔗</div>
+    </div>
+  </div>
+
+  <div class="section-title">Tendencia de Facturación · Abr 2025 – Abr 2026</div>
+  <div class="grid-trend">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Facturación Mensual</div>
+      <canvas id="trendChart" height="200"></canvas>
+      <div class="trend-meta">
+        <div class="tm"><div class="tm-l">Máximo</div><div class="tm-v" style="color:var(--turquesa)" id="metaMax">—</div></div>
+        <div class="tm"><div class="tm-l" data-meta="abr">Abr 2026</div><div class="tm-v" style="color:var(--magenta)" id="metaAbr">—</div></div>
+        <div class="tm"><div class="tm-l">Promedio</div><div class="tm-v" style="color:var(--amarillo)" id="metaProm">—</div></div>
+        <div class="tm">
+          <div class="tm-l" data-meta="diff">Var. vs Mar-26</div>
+          <div class="tm-v" id="metaDiff">—</div>
+          <div style="font-size:10px;margin-top:2px" id="metaDiffPct">—</div>
+        </div>
+      </div>
+      <div class="trend-estados">
+        <div class="te-item">
+          <span class="te-dot" style="background:var(--verde)"></span>
+          <span class="te-label">Activo</span>
+          <span class="te-val" id="teActivo">—</span>
+          <span class="te-svc" id="teSvcActivo">—</span>
+        </div>
+        <div class="te-sep"></div>
+        <div class="te-item">
+          <span class="te-dot" style="background:var(--naranja2)"></span>
+          <span class="te-label">Cancelado en Telcos</span>
+          <span class="te-val" id="teCT">—</span>
+          <span class="te-svc" id="teSvcCT">—</span>
+        </div>
+        <div class="te-sep"></div>
+        <div class="te-item">
+          <span class="te-dot" style="background:var(--muted)"></span>
+          <span class="te-label">Cancelado (sin factura)</span>
+          <span class="te-val">$0,00</span>
+          <span class="te-svc">155 svc</span>
+        </div>
+      </div>
+      <div class="nota-box orange">
+        <span class="nota-icon">⚠</span>
+        <span class="nota-text"><strong>Cancelado en Telcos:</strong> Todo CANCELADO con facturación > $0 normalizado. ISP factura aunque el servicio fue cancelado comercialmente sin notificar a PEI. Historial: TELEFONICA (Abr–Sep 2025), CIRION (Nov 2025–Mar 2026), ETAPA (Jun–Ago 2025).</span>
+      </div>
+      <div class="nota-box red">
+        <span class="nota-icon">⚠</span>
+        <span class="nota-text"><strong>Observación Abr-26:</strong> Disminución por gestión de inventario en DC Cirion. Se enviaron solicitudes de desconexión de servicios no utilizados al proveedor.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Tipo de Servicio</div>
+      <div class="donut-wrap">
+        <canvas id="tipoChart" width="160" height="160" style="max-height:160px;max-width:160px;"></canvas>
+        <div class="donut-center"><div class="big" id="tipoTotal">—</div><div class="small">Servicios</div></div>
+      </div>
+      <div class="legend-list" id="tipoLegend"></div>
+    </div>
+  </div>
+
+  <div class="section-title">Análisis por Tercerizadora y Clientes</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Facturación &amp; Servicios por Tercerizadora</div>
+      <div class="bar-list" id="barList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Top Clientes por Servicios</div>
+      <div class="client-list" id="clientList"></div>
+    </div>
+  </div>
+
+  <div class="section-title">Análisis por Tipo de Enlace, Cliente y Detalle de Servicio</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Tipo de Enlace</div>
+      <div class="donut-wrap">
+        <canvas id="enlaceChart" width="155" height="155" style="max-height:155px;max-width:155px;"></canvas>
+        <div class="donut-center"><div class="big" id="enlaceTotal">—</div><div class="small">Servicios</div></div>
+      </div>
+      <div class="legend-list" id="enlaceLegend"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Tipo de Cliente</div>
+      <div class="donut-wrap">
+        <canvas id="clienteChart" width="155" height="155" style="max-height:155px;max-width:155px;"></canvas>
+        <div class="donut-center"><div class="big" id="clienteTotal">—</div><div class="small">Servicios</div></div>
+      </div>
+      <div class="legend-list" id="clienteLegend"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Detalle de Servicio – N° Servicios</div>
+      <canvas id="detalleChart" height="260"></canvas>
+    </div>
+  </div>
+
+  <div class="section-title">Detalle de Facturación</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
+      <canvas id="hbarChart" height="240"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Facturación por Tipo de Enlace y Tipo de Cliente ($)</div>
+      <canvas id="factTiposChart" height="240"></canvas>
+    </div>
+  </div>
+</main>
+<footer>Realizado por: Proyectos e Implementación · Telconet &nbsp;|&nbsp; Fuente: TERC_GESTIÓN_FACTURACIÓN.xlsx &nbsp;|&nbsp; Generado Abril 2026</footer>
+
+<script>
+// ═══ PALETA ═══
+const C={turquesa:'#00B0F0',turquesa2:'#00B5CB',magenta:'#FF44B0',naranja:'#FF6F42',morado:'#8B6FE8',morado2:'#AA7FD0',amarillo:'#FFA700',azulC:'#6EBEEB',azulC2:'#64B4F5',verde:'#34D399',naranja2:'#FF9A44',muted:'#9BBCD8'};
+const ALL_TERCS=['TELEFONICA','CNT','CIRION','PUNTONET','CLARO','C4','KONNET','SPEEDCAST','IFOTONCORP','ETAPA','TEUNO'];
+const TERC_COLORS={TELEFONICA:C.turquesa,CNT:C.magenta,CIRION:C.naranja,PUNTONET:C.morado,CLARO:C.amarillo,C4:C.azulC2,KONNET:C.azulC,SPEEDCAST:'#38BDF8',IFOTONCORP:'#C084FC',ETAPA:'#86EFAC',TEUNO:'#FCA5A5'};
+
+// ═══════════════════════════════════════════════════════════
+// DATASET ÚNICO — todo calculado desde aquí
+// ACTIVO + CANCELADO→CANCELADO EN TELCOS si fact>0
+// ═══════════════════════════════════════════════════════════
+// Dataset extendido: 25 meses (Abr-24 → Abr-26) para ventana deslizante de 13
+const ALL_MESES=[
+  'Abr-24','May-24','Jun-24','Jul-24','Ago-24','Sep-24','Oct-24','Nov-24','Dic-24',
+  'Ene-25','Feb-25','Mar-25',
+  'Abr-25','May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25',
+  'Ene-26','Feb-26','Mar-26','Abr-26'
+];
+// Índice del mes actual (Abr-26 = índice 24 en ALL_MESES)
+let activeMesAbsIdx = 24; // Abr-26 por defecto
+const MESES=['Abr-25','May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25','Ene-26','Feb-26','Mar-26','Abr-26'];
+const MI=12; // índice de Abr-26 en el array local de 13 meses
+
+// Facturación mensual por tercerizadora
+// FACT_MES extendido: 25 meses (Abr-24 → Abr-26)
+// Primeros 12 (Abr-24→Mar-25) estimados del INFORME FACT GENERAL 2024
+const FACT_MES={
+  TELEFONICA:[39500,41200,40800,40800,43100,42800,43500,44800,51200,45800,44900,44600, 44682.31,48690.93,43739.91,43739.91,47158.27,45869.01,46210.12,48316.83,55508.47,49475.75,48940.03,48726.16,48804.36],
+  CNT:       [41200,41200,41200,41100,40200,40200,39800,40800,40800,40800,41500,41500, 44078.60,44078.60,44078.60,44072.26,42705.82,42705.82,42475.82,43305.44,43305.44,43305.44,44005.32,44005.32,47354.24],
+  CIRION:    [11800,11800,11800,11650,11650,11650,11450,11200,11200,11200,11200,11200, 11405.30,11405.30,11405.30,11245.85,11245.85,11245.85,11073.35,10875.55,10875.55,10875.55,10875.55,10875.55, 8510.00],
+  PUNTONET:  [ 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,  3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50],
+  CLARO:     [ 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422,  3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3401.24],
+  IFOTONCORP:[14632,14632,14632,14632,14632,14632,14632,14632,14632,14632,14632,14632, 14631.68,14631.68,14631.68,14631.68,14631.68,14631.68, 4841.50,  287.50,  287.50,  250.00,    0.00,    0.00,    0.00],
+  ETAPA:     [  200,  200,  200,  190,  190,  180,  180,  180,  180,  180,  180,  180,   179.37,  175.68,  423.75,  412.25,  412.25,  110.37,  110.37,  110.37,  110.37,    0.00,    0.00,    0.00,    0.00],
+  SPEEDCAST: [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0.00,    0.00,    0.00,    0.00,    0.00,    0.00,    0.00,    0.00,    0.00,13031.94,16491.57,13031.94,13031.94],
+  C4:        [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0,0,0,0,0,0,0,0,0,0,0,0,322.32],
+  KONNET:    [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0,0,0,0,0,0,0,0,0,0,0,0,170.00],
+  TEUNO:     [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0,0,0,0,0,0,0,0,0,0,0,0,0],
+};
+
+// ─── Datos Abr-26 exactos por tercerizadora ───
+const D={
+  TELEFONICA:{factA:48726.16,factCT:78.20,svcA:1025,svcCT:2,cli:342,
+    enlace:{PRINCIPAL:{svc:968,fact:43702.96},BACKUP:{svc:56,fact:4984.10},INFRAESTRUCTURA:{svc:1,fact:39.10}},
+    cliente:{CORPORATIVO:{svc:841,fact:37379.44},BANCA:{svc:184,fact:11346.72}},
+    tipo:{ULTIMA_MILLA:1014,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:1,CAPACIDAD:0},
+    detalle:{'INSTALACIÓN':940,'DATOS FWA':30,'MULTICARRIER':12,'CROSSCONEXION':6,'CONEXION TERCEROS BANRED GYE':3,'CONEXION TERCEROS BANRED UIO':3,'CONEXION TERCEROS BANCO CENTRAL':3,'VDC CONECTIVIDAD (6751)':2,'INTERCONEXION':1},
+    clientes:[['BANCO DE LA PRODUCCION S.A. PRODUBANCO',75],['COOPERATIVA DE AHORRO Y CREDITO ANDALUCIA LTDA',40],['DELI INTERNACIONAL S. A.',36],['BANCO GUAYAQUIL S.A.',32],['GRUPO BRAVCO S A',28],['INT FOOD SERVICES CORP SA',27],['Direccion General del Material DIGMAT',25],['SHEMLON S.A.',20],['BANCO DE MACHALA S A',18],['MABEL TRADING S.A.',18]],
+  },
+  CNT:{factA:47354.24,factCT:0,svcA:115,svcCT:0,cli:48,
+    enlace:{PRINCIPAL:{svc:114,fact:47354.24},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:1,fact:0}},
+    cliente:{CORPORATIVO:{svc:73,fact:40563.54},BANCA:{svc:42,fact:6790.70}},
+    tipo:{ULTIMA_MILLA:105,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{'INSTALACIÓN':104,'CROSSCONEXION':6,'VDC CONECTIVIDAD (6751)':2,'OTROS':3},
+    clientes:[['BANCO DE MACHALA S A',12],['BANCO DEL PACIFICO S.A.',8],['BANCO GUAYAQUIL S.A.',6],['EMSAAIRPORT SERVICES CEM',6],['SUPERDEPORTE S.A.',5]],
+  },
+  CIRION:{factA:8510.00,factCT:0,svcA:57,svcCT:0,cli:23,
+    enlace:{PRINCIPAL:{svc:48,fact:7026.50},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:9,fact:1483.50}},
+    cliente:{CORPORATIVO:{svc:41,fact:5669.50},BANCA:{svc:16,fact:2840.50}},
+    tipo:{ULTIMA_MILLA:55,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{'CROSSCONEXION':34,'INFRAESTRUCTURE':12,'COLLOCATION':4,'HOUSING':4,'INSTALACIÓN':2,'OTROS':1},
+    clientes:[['REPORNE',10],['6 HILOS DE FIBRA DC INAQUITO',6],['Dipac Manta S A',5],['BANCO AMIBANK S A',4],['RTC',4]],
+  },
+  PUNTONET:{factA:3599.50,factCT:0,svcA:10,svcCT:0,cli:6,
+    enlace:{PRINCIPAL:{svc:10,fact:3599.50},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
+    cliente:{CORPORATIVO:{svc:3,fact:1161.50},BANCA:{svc:7,fact:2438.00}},
+    tipo:{ULTIMA_MILLA:10,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{'INSTALACIÓN':10},
+    clientes:[['BANCO DE MACHALA S A',5],['SHEMLON S.A.',1],['PYCCA S.A',1],['BANCO GUAYAQUIL S.A.',1],['Banco Bolivariano',1]],
+  },
+  CLARO:{factA:3401.24,factCT:0,svcA:93,svcCT:0,cli:21,
+    enlace:{PRINCIPAL:{svc:93,fact:3401.24},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
+    cliente:{CORPORATIVO:{svc:76,fact:1597.52},BANCA:{svc:17,fact:1803.72}},
+    tipo:{ULTIMA_MILLA:93,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{'INSTALACIÓN':93},
+    clientes:[['Direccion General del Material DIGMAT',25],['BT SOLUTIONS',9],['BPE ELECTRONIC',9],['Banco Procredit',9],['CEDIA',7]],
+  },
+  C4:{factA:322.32,factCT:0,svcA:16,svcCT:0,cli:15,
+    enlace:{PRINCIPAL:{svc:16,fact:322.32},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
+    cliente:{CORPORATIVO:{svc:14,fact:269.15},BANCA:{svc:2,fact:53.17}},
+    tipo:{ULTIMA_MILLA:16,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{'INSTALACIÓN':16},
+    clientes:[['Corporacion Lanec S.A.',2],['MCG DIAGNOSTICA',1],['HUMANITAS S.A.',1],['TALMAX S.A.',1],['JOALPA',1]],
+  },
+  KONNET:{factA:170.00,factCT:0,svcA:5,svcCT:0,cli:5,
+    enlace:{PRINCIPAL:{svc:5,fact:170.00},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
+    cliente:{CORPORATIVO:{svc:4,fact:136.00},BANCA:{svc:1,fact:34.00}},
+    tipo:{ULTIMA_MILLA:5,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{'INSTALACIÓN':5},
+    clientes:[['Banco Internacional',1],['Aseguradora del Sur',1],['Tutti',1],['Junta Beneficencia Gye',1],['Dmujeres',1]],
+  },
+  SPEEDCAST:{factA:13031.94,factCT:0,svcA:76,svcCT:0,cli:3,
+    enlace:{PRINCIPAL:{svc:76,fact:13031.94},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
+    cliente:{CORPORATIVO:{svc:76,fact:13031.94},BANCA:{svc:0,fact:0}},
+    tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:76},
+    detalle:{'STARLINK':76},
+    clientes:[['FUERZAS ARMADAS',50],['MARINA MERCANTE',16],['POLICIA NACIONAL',10]],
+  },
+  IFOTONCORP:{factA:0,factCT:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
+  ETAPA:{factA:0,factCT:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
+  TEUNO:{factA:0,factCT:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
+};
+// calc fact
+ALL_TERCS.forEach(t=>{D[t].fact=D[t].factA+D[t].factCT;});
+
+// ═══ FILTRO ═══
+let activeTerc=new Set(ALL_TERCS);
+let activeMesIdx=12; // Abr-26 por defecto (índice 12)
+const fmt=v=>'$'+v.toLocaleString('es-EC',{minimumFractionDigits:2});
+const fmtk=v=>'$'+(v/1000).toFixed(1)+'k';
+
+// ─── Helpers de agregación ───
+// ══ Matrices históricas por mes (0=Abr-25…12=Abr-26) ══
+// CLI_MES extendido: 25 meses (Abr-24 → Abr-26)
+const CLI_MES={
+  TELEFONICA:[280,285,288,288,295,298,300,305,350,310,308,309, 308,309,307,307,308,308,309,323,379,379,379,379,342],
+  CNT:       [ 45, 45, 45, 44, 47, 47, 46, 48,  48, 48, 48, 48,  48, 48, 48, 47, 49, 49, 48, 50,  50,  50,  50,  50,  48],
+  CIRION:    [ 30, 30, 30, 32, 32, 32, 32, 30,  30, 30, 30, 30,  28, 28, 28, 31, 31, 31, 31, 28,  28,  28,  28,  28,  23],
+  PUNTONET:  [  6,  6,  6,  6,  6,  6,  6,  6,   6,  6,  6,  6,   6,  6,  6,  6,  6,  6,  6,  6,   6,   6,   6,   6,   6],
+  CLARO:     [ 21, 21, 21, 21, 21, 21, 21, 21,  21, 21, 21, 21,  21, 21, 21, 21, 21, 21, 21, 21,  21,  21,  21,  21,  21],
+  SPEEDCAST: [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   3,   5,   3,   3],
+  IFOTONCORP:[ 12, 12, 12, 12, 12, 12, 12, 12,  12, 12, 12, 12,  12, 12, 12, 12, 12, 12,  2,  1,   1,  12,   0,   0,   0],
+  ETAPA:     [  2,  2,  2,  2,  2,  2,  2,  2,   2,  2,  2,  2,   2,  3,  1,  1,  1,  1,  1,  1,   1,   0,   0,   0,   0],
+  C4:        [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,  15],
+  KONNET:    [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   5],
+  TEUNO:     [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0],
+};
+// SVC_MES extendido: 25 meses (Abr-24 → Abr-26)
+const SVC_MES={
+  TELEFONICA:[790,800,820,820,835,838,840,848,905,830,840,845, 849,860,898,898,921,924,931,950,1014,1019,1020,1024,1027],
+  CNT:       [ 90, 90, 90, 88, 96, 96, 94, 96,  96, 96, 97, 97,  98, 98, 98, 96,104,104,103,105, 105, 105, 106, 106, 115],
+  CIRION:    [68,68,68,70,70,70,69,67,67,67,67,67,65,65,65,65,65,65,57,57,57,57,57,60,57],
+  PUNTONET:  [ 10, 10, 10, 10, 10, 10, 10, 10,  10, 10, 10, 10,  10, 10, 10, 10, 10, 10, 10, 10,  10,  10,  10,  10,  10],
+  CLARO:     [ 94, 94, 94, 94, 94, 94, 94, 94,  94, 94, 94, 94,  94, 94, 94, 94, 94, 94, 94, 94,  94,  94,  94,  94,  93],
+  IFOTONCORP:[ 14, 14, 14, 14, 14, 14, 14, 14,  14, 14, 14, 14,  14, 14, 14, 14, 14, 14,  2,  1,   1,  14,   0,   0,   0],
+  ETAPA:     [  4,  4,  4,  4,  4,  4,  4,  4,   4,  4,  4,  4,   4,  5,  5,  4,  4,  3,  3,  3,   3,   0,   0,   0,   0],
+  SPEEDCAST: [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,  76, 112,  76,  76],
+  C4:        [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,  16],
+  KONNET:    [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   5],
+  TEUNO:     [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0],
+};
+
+const FACT_CT_MES={
+  // 25 meses (Abr-24→Abr-26): primeros 12 históricos sin datos CT conocidos = 0
+  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 122.89,39.10,31.53,31.53,69.27,96.96,0,0,0,0,0,0,78.20],
+  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,517.50,517.50,517.50,517.50,517.50,0],
+  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,313.38,301.88,301.88,0,0,0,0,0,0,0,0],
+  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  C4:        [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
+};
+function aggFact(){
+  const mi=activeMesAbsIdx;
+  let factA=0,factCT=0,svc=0,cli=0;
+  [...activeTerc].forEach(t=>{
+    const fct  = (FACT_CT_MES[t] && FACT_CT_MES[t][mi]!=null) ? (FACT_CT_MES[t][mi]||0) : 0;
+    const ftotal= (FACT_MES[t]   && FACT_MES[t][mi]!=null)    ? (FACT_MES[t][mi]||0)    : 0;
+    const svcV  = (SVC_MES[t]    && SVC_MES[t][mi]!=null)     ? (SVC_MES[t][mi]||0)     : 0;
+    const cliV  = (CLI_MES[t]    && CLI_MES[t][mi]!=null)     ? (CLI_MES[t][mi]||0)     : 0;
+    factA  += (ftotal - fct);
+    factCT += fct;
+    svc    += svcV;
+    cli    += cliV;
+  });
+  return{factA:isNaN(factA)?0:factA, factCT:isNaN(factCT)?0:factCT,
+         fact:isNaN(factA+factCT)?0:factA+factCT, svc, cli};
+}
+function aggEnlace(){
+  const r={PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}};
+  [...activeTerc].forEach(t=>{['PRINCIPAL','BACKUP','INFRAESTRUCTURA'].forEach(k=>{r[k].svc+=D[t].enlace[k].svc;r[k].fact+=D[t].enlace[k].fact;});});
+  return r;
+}
+function aggCliente(){
+  const r={CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}};
+  [...activeTerc].forEach(t=>{['CORPORATIVO','BANCA'].forEach(k=>{r[k].svc+=D[t].cliente[k].svc;r[k].fact+=D[t].cliente[k].fact;});});
+  return r;
+}
+function aggTipo(){
+  const r={ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0};
+  [...activeTerc].forEach(t=>{
+    Object.keys(r).forEach(k=>{ r[k]+=(D[t].tipo[k]||0); });
+  });
+  return r;
+}
+function aggDetalle(){
+  const r={};
+  [...activeTerc].forEach(t=>{Object.entries(D[t].detalle).forEach(([k,v])=>{r[k]=(r[k]||0)+v;});});
+  return Object.entries(r).sort((a,b)=>b[1]-a[1]);
+}
+function aggClientes(){
+  // Merge top clientes de todas las tercerizadoras activas
+  const map={};
+  [...activeTerc].forEach(t=>{D[t].clientes.forEach(([name,svc])=>{map[name]=(map[name]||0)+svc;});});
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,12);
+}
+// Ventana deslizante: 13 meses que terminan en activeMesAbsIdx
+function getWindow(){
+  const end=activeMesAbsIdx;
+  const start=Math.max(0,end-12);
+  return {start,end,labels:ALL_MESES.slice(start,end+1)};
+}
+function getTrendVals(){
+  const {start,end}=getWindow();
+  return ALL_MESES.slice(start,end+1).map((_,i)=>{
+    const mi=start+i;
+    return [...activeTerc].reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][mi]||0:0),0);
+  });
+}
+function getTrendSvcs(){
+  const {start,end}=getWindow();
+  return ALL_MESES.slice(start,end+1).map((_,i)=>{
+    const mi=start+i;
+    return [...activeTerc].reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][mi]||0:0),0);
+  });
+}
+let _ts=[];
+function getMesLabel(idx){ return ALL_MESES[idx]||ALL_MESES[ALL_MESES.length-1]; }
+
+// ═══ CHARTS ═══
+Chart.defaults.color='#9BBCD8';Chart.defaults.font.family='Barlow,sans-serif';
+
+// Plugin etiquetas
+const valueLabelsPlugin={id:'valueLabels',afterDatasetsDraw(chart){
+  const{ctx,data,chartArea:{left,bottom}}=chart;
+  if(!chart.config.options.showValueLabels) return;
+  const isH=chart.config.options.indexAxis==='y';
+  data.datasets.forEach((ds,di)=>{
+    const meta=chart.getDatasetMeta(di);
+    if(meta.hidden) return;
+    meta.data.forEach((bar,i)=>{
+      const val=ds.data[i]; if(!val||val<0) return;
+      ctx.save();ctx.font='500 12px Barlow,sans-serif';ctx.textBaseline='middle';
+      const label=chart.config.options.labelFormatter?chart.config.options.labelFormatter(val):String(val);
+      const tw=ctx.measureText(label).width;
+      ctx.shadowColor='rgba(0,0,0,0.75)';ctx.shadowBlur=4;
+      if(isH){const bW=bar.x-left;if(bW>tw+30){ctx.textAlign='right';ctx.fillStyle='#fff';ctx.fillText(label,bar.x-8,bar.y);}else{ctx.textAlign='left';ctx.fillStyle='#fff';ctx.fillText(label,bar.x+7,bar.y);}}
+      else{const bH=bottom-bar.y;if(bH>30){ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(label,bar.x,bar.y+13);}else{ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(label,bar.x,bar.y-10);}}
+      ctx.restore();
+    });
+  });
+}};
+Chart.register(valueLabelsPlugin);
+
+let _tv=[];
+const trendLabelPlugin={id:'trendLabels',afterDatasetsDraw(chart){
+  if(chart.canvas.id!=='trendChart'||!_tv.length) return;
+  const{ctx,scales:{x,y}}=chart;if(!x||!y) return;
+  const lineIdx=chart.data.datasets.length-1;
+  const meta=chart.getDatasetMeta(lineIdx);if(!meta||meta.hidden) return;
+  const isSelected=i=>i===_tv.length-1;
+  _tv.forEach((val,i)=>{
+    if(!val||typeof val!=='number') return;
+    const pt=meta.data[i];if(!pt) return;
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.85)';ctx.shadowBlur=3;
+    ctx.textAlign='center';
+
+    // Línea 1: Facturación
+    const factLabel='$'+(val/1000).toFixed(1)+'k';
+    ctx.font=isSelected(i)?'700 9.5px Barlow,sans-serif':'500 8px Barlow,sans-serif';
+    ctx.textBaseline='bottom';
+    ctx.fillStyle=isSelected(i)?'#FFE566':'#fff';
+    ctx.fillText(factLabel, pt.x, pt.y-14);
+
+    // Línea 2: N° enlaces (svc)
+    const svcVal=_ts[i]||0;
+    if(svcVal>0){
+      const svcLabel=svcVal.toLocaleString('es-EC')+' enl.';
+      ctx.font=isSelected(i)?'600 8.5px Barlow,sans-serif':'400 7.5px Barlow,sans-serif';
+      ctx.fillStyle=isSelected(i)?C.azulC:'rgba(155,188,216,0.85)';
+      ctx.fillText(svcLabel, pt.x, pt.y-3);
+    }
+
+    ctx.restore();
+  });
+}};
+Chart.register(trendLabelPlugin);
+
+const annotPlugin={id:'annotAbr26',afterRender(chart){
+  if(chart.canvas.id!=='trendChart'||!_tv.length) return;
+  const{ctx,chartArea,scales}=chart;if(!chartArea||!scales.x||!scales.y) return;
+  const{top,right}=chartArea;const li=_tv.length-1;
+  const xPos=scales.x.getPixelForValue(li),yPos=scales.y.getPixelForValue(_tv[li]);
+  ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(255,68,176,0.5)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(xPos,top+26);ctx.lineTo(xPos,yPos-14);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=C.magenta;ctx.beginPath();ctx.moveTo(xPos,yPos-5);ctx.lineTo(xPos-5,yPos-15);ctx.lineTo(xPos+5,yPos-15);ctx.closePath();ctx.fill();
+  const NOTE='● '+ALL_MESES[activeMesAbsIdx];ctx.font='600 9px Barlow,sans-serif';const tw=ctx.measureText(NOTE).width;
+  const bw=tw+14,bh=17,bx=Math.min(xPos-bw/2,right-bw-4),by=top+5;
+  ctx.fillStyle='rgba(10,27,61,0.93)';ctx.strokeStyle=C.magenta;ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(bx,by,bw,bh,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.magenta;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(NOTE,bx+7,by+bh/2);ctx.restore();
+}};
+Chart.register(annotPlugin);
+
+// ─── TREND ───
+let trendChart;
+function buildTrend(){
+  _tv=getTrendVals();
+  _ts=getTrendSvcs();
+  const win=getWindow();
+  if(trendChart) trendChart.destroy();
+  const ctx=document.getElementById('trendChart').getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba(0,176,240,0.72)');grad.addColorStop(1,'rgba(0,181,203,0.18)');
+  const actArr=[...activeTerc].filter(t=>FACT_MES[t]&&FACT_MES[t].some(v=>v>0));
+  const ds=[];
+  const selIdx=_tv.length-1; // siempre el último de la ventana = mes seleccionado
+  // Slice de datos en la ventana
+  const wSlice=t=>(FACT_MES[t]||[]).slice(win.start,win.end+1);
+  if(actArr.length===1){
+    const t=actArr[0];
+    const dat=wSlice(t);
+    ds.push({type:'bar',label:t,data:dat,
+      backgroundColor:dat.map((_,i)=>i===selIdx?TERC_COLORS[t]+'FF':TERC_COLORS[t]+'80'),
+      borderWidth:dat.map((_,i)=>i===selIdx?2:0),
+      borderColor:dat.map((_,i)=>i===selIdx?'#fff':'transparent'),
+      borderRadius:5});
+  } else {
+    actArr.forEach((t,ti)=>{
+      const dat=wSlice(t);
+      ds.push({type:'bar',label:t,data:dat,
+        backgroundColor:dat.map((_,i)=>i===selIdx?TERC_COLORS[t]+'FF':TERC_COLORS[t]+'70'),
+        borderRadius:ti===0?5:0,borderWidth:0,stack:'s'});
+    });
+  }
+  ds.push({type:'line',label:'Total',data:_tv,borderColor:C.magenta,borderWidth:2.5,
+    pointRadius:_tv.map((_,i)=>i===selIdx?8:3),
+    pointBackgroundColor:_tv.map((_,i)=>i===selIdx?C.amarillo:C.turquesa),
+    pointBorderColor:_tv.map((_,i)=>i===selIdx?'#fff':'#1a3f7a'),
+    pointBorderWidth:_tv.map((_,i)=>i===selIdx?2:1),
+    tension:0.42,fill:false,stack:undefined});
+  // meta — basado en mes seleccionado vs mes anterior
+  const abrV=_tv[_tv.length-1], marV=_tv.length>1?_tv[_tv.length-2]:_tv[0];
+  const maxV=Math.max(..._tv),promV=_tv.reduce((a,b)=>a+b,0)/_tv.length;
+  const dv=abrV-marV,dpct=marV>0?dv/marV*100:0;
+  document.getElementById('metaMax').textContent=fmtk(maxV);
+  document.getElementById('metaAbr').textContent=fmtk(abrV);
+  // Label dinámico del mes corte
+  const metaAbrEl=document.querySelector('[data-meta="abr"]');
+  if(metaAbrEl) metaAbrEl.textContent=ALL_MESES[activeMesAbsIdx];
+  document.getElementById('metaProm').textContent=fmtk(promV);
+  // Label dinámico según mes seleccionado
+  const metaAbrL=document.querySelector('.tm-l[data-meta="abr"]');
+  if(metaAbrL) metaAbrL.textContent=MESES[selIdx];
+  const metaDiffL=document.querySelector('.tm-l[data-meta="diff"]');
+  const prevLabel=selIdx>0?MESES[selIdx-1]:'—';
+  if(metaDiffL) metaDiffL.textContent='Var. vs '+prevLabel;
+  const de=document.getElementById('metaDiff'),dp=document.getElementById('metaDiffPct');
+  de.textContent=(dv>=0?'▲ ':'▼ ')+fmtk(Math.abs(dv));de.style.color=dv>=0?C.verde:C.naranja;
+  dp.textContent=(dv>=0?'+':'')+dpct.toFixed(2)+'%';dp.style.color=de.style.color;
+  // Actualizar header corte
+  const cd=document.getElementById('corteDate');
+  if(cd) cd.textContent=MESES[selIdx];
+
+  trendChart=new Chart(ctx,{type:'bar',data:{labels:win.labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:true,layout:{padding:{top:36}},
+      plugins:{legend:{display:actArr.length>1,position:'top',labels:{color:'#9BBCD8',font:{size:9},usePointStyle:true,pointStyleWidth:8,boxHeight:5,padding:12}},
+        tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,titleColor:C.turquesa,bodyColor:'#fff',
+          titleFont:{size:12,weight:'bold'},
+          callbacks:{
+            label:ctx=>{
+              const t=ctx.dataset.label;
+              const relIdx=ctx.dataIndex; // índice relativo en la ventana (0-12)
+              const w=getWindow();
+              const absIdx=w.start+relIdx; // índice absoluto en arrays de 25
+              if(t==='Total'){
+                const svcTotal=_ts[relIdx]||0;
+                return ' Total: '+fmt(ctx.parsed.y)+'  |  🔗 '+svcTotal.toLocaleString('es-EC')+' svc';
+              }
+              // Usar índice absoluto para SVC_MES
+              const svc=(SVC_MES[t]&&SVC_MES[t][absIdx]!=null)?SVC_MES[t][absIdx]:0;
+              return ' '+t+': '+fmt(ctx.parsed.y)+'  |  '+svc.toLocaleString('es-EC')+' svc';
+            },
+            afterBody:ctx=>{
+              if(ctx[0]&&ctx[0].dataIndex===_tv.length-1&&activeMesAbsIdx===24)
+                return['','⚠ Baja inventario DC Cirion.','  + $78,20 Cancelado en Telcos.'];
+              return[];
+            }
+          }},
+      },
+      scales:{x:{ticks:{color:'#9BBCD8',font:{size:9.5},maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'rgba(255,255,255,0.08)'}},
+        y:{ticks:{color:'#9BBCD8',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.06)'},border:{color:'rgba(255,255,255,0.08)'},min:0}}}});
+}
+
+// ─── DONUT helper ───
+function buildDonut(canvasId,totalId,legendId,labels,vals,cols){
+  const total=vals.reduce((a,b)=>a+b,0);
+  document.getElementById(totalId).textContent=total.toLocaleString('es-EC');
+  const existing=Chart.getChart(canvasId);if(existing) existing.destroy();
+  const ctx=document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:cols,borderWidth:2,borderColor:'#1a3f7a',hoverOffset:8}]},
+    options:{responsive:false,cutout:'64%',plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,titleColor:'#fff',bodyColor:C.turquesa,
+        callbacks:{label:ctx=>' '+ctx.label+': '+ctx.parsed.toLocaleString('es-EC')}}}}});
+  const leg=document.getElementById(legendId);leg.innerHTML='';
+  labels.forEach((lbl,i)=>{
+    const pct=total>0?(vals[i]/total*100).toFixed(1):0;
+    leg.innerHTML+=`<div class="legend-item"><div class="legend-dot" style="background:${cols[i]}"></div><span class="legend-name">${lbl}</span><span class="legend-val">${vals[i].toLocaleString('es-EC')}</span><span class="legend-pct">${pct}%</span></div>`;
+  });
+}
+
+// ─── TIPO SERVICIO ───
+function buildTipo(){
+  const tipo=aggTipo();
+  const otros=aggFact().svc-(tipo.ULTIMA_MILLA+tipo.FIBRA_OSCURA+tipo.ULTIMA_MILLA_MIXTA+tipo.CAPACIDAD);
+  buildDonut('tipoChart','tipoTotal','tipoLegend',
+    ['Última Milla','Fibra Oscura','Últ. Milla Mixta','Capacidad/Starlink','Otros'],
+    [tipo.ULTIMA_MILLA,tipo.FIBRA_OSCURA,tipo.ULTIMA_MILLA_MIXTA,tipo.CAPACIDAD,Math.max(0,otros)],
+    [C.turquesa,C.magenta,C.naranja,'#38BDF8',C.morado]);
+}
+
+// ─── HBAR ───
+let hbarChart;
+function buildHbar(){
+  if(hbarChart) hbarChart.destroy();
+  const ctx=document.getElementById('hbarChart').getContext('2d');
+  const labels=[],data=[],colors=[];
+  const miH=activeMesAbsIdx;
+  ALL_TERCS.forEach(t=>{
+    const fv=FACT_MES[t]?FACT_MES[t][miH]:0;
+    if(activeTerc.has(t)&&fv>0){labels.push(t);data.push(fv);colors.push(TERC_COLORS[t]);}
+  });
+  hbarChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderWidth:0}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,showValueLabels:true,labelFormatter:v=>fmt(v),layout:{padding:{right:130,top:4}},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,bodyColor:'#fff',titleColor:C.turquesa,callbacks:{label:ctx=>' '+fmt(ctx.parsed.x)}}},
+      scales:{x:{ticks:{color:'#9BBCD8',font:{size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'}},
+        y:{ticks:{color:'#fff',font:{size:13,family:'Barlow Condensed'},padding:6},grid:{display:false},border:{display:false}}}}});
+}
+
+// ─── DETALLE ───
+let detalleChart;
+function buildDetalle(){
+  const dets=aggDetalle().slice(0,8);
+  const labels=dets.map(([k])=>k),vals=dets.map(([,v])=>v);
+  const pal=[C.turquesa,C.turquesa2,C.magenta,C.naranja,C.morado,C.morado2,C.amarillo,C.azulC];
+  if(detalleChart) detalleChart.destroy();
+  const ctx=document.getElementById('detalleChart').getContext('2d');
+  detalleChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:pal.slice(0,labels.length),borderRadius:6,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:true,showValueLabels:true,labelFormatter:v=>String(v),layout:{padding:{top:28,left:4,right:4}},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,bodyColor:'#fff',titleColor:C.turquesa,callbacks:{label:ctx=>' '+ctx.parsed.y+' svc'}}},
+      scales:{x:{ticks:{color:'#9BBCD8',font:{size:10},maxRotation:30,minRotation:20},grid:{display:false},border:{color:'rgba(255,255,255,0.08)'}},
+        y:{ticks:{color:'#9BBCD8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'}}}}});
+}
+
+// ─── ENLACE ───
+function buildEnlace(){
+  const e=aggEnlace();
+  buildDonut('enlaceChart','enlaceTotal','enlaceLegend',
+    ['PRINCIPAL','BACKUP','INFRAESTRUCTURA'],
+    [e.PRINCIPAL.svc,e.BACKUP.svc,e.INFRAESTRUCTURA.svc],
+    [C.turquesa,C.amarillo,C.morado]);
+}
+
+// ─── CLIENTE ───
+function buildCliente(){
+  const c=aggCliente();
+  buildDonut('clienteChart','clienteTotal','clienteLegend',
+    ['CORPORATIVO','BANCA'],
+    [c.CORPORATIVO.svc,c.BANCA.svc],
+    [C.magenta,C.azulC]);
+}
+
+// ─── FACT TIPOS ───
+let factTiposChart;
+function buildFactTipos(){
+  if(factTiposChart) factTiposChart.destroy();
+  const ctx=document.getElementById('factTiposChart').getContext('2d');
+  const e=aggEnlace(),c=aggCliente();
+  const eF=[e.PRINCIPAL.fact,e.BACKUP.fact,e.INFRAESTRUCTURA.fact];
+  const cF=[c.CORPORATIVO.fact,c.BANCA.fact];
+  factTiposChart=new Chart(ctx,{type:'bar',
+    data:{labels:['PRINCIPAL','BACKUP','INFRAESTRUC.','','CORPORATIVO','BANCA'],
+      datasets:[
+        {label:'Tipo Enlace',data:[...eF,null,null,null],backgroundColor:[C.turquesa,C.amarillo,C.morado,'transparent','transparent','transparent'],borderRadius:6,borderWidth:0,barPercentage:0.6},
+        {label:'Tipo Cliente',data:[null,null,null,null,...cF],backgroundColor:['transparent','transparent','transparent','transparent',C.magenta,C.azulC],borderRadius:6,borderWidth:0,barPercentage:0.6},
+      ]},
+    options:{responsive:true,maintainAspectRatio:true,showValueLabels:true,labelFormatter:v=>v?fmtk(v):'',layout:{padding:{top:28}},
+      plugins:{legend:{display:true,position:'top',labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:16}},
+        tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,bodyColor:'#fff',titleColor:C.turquesa,callbacks:{label:ctx=>ctx.parsed.y?' '+fmt(ctx.parsed.y):''}}},
+      scales:{x:{ticks:{color:'#9BBCD8',font:{size:10}},grid:{display:false},border:{color:'rgba(255,255,255,0.08)'}},
+        y:{ticks:{color:'#9BBCD8',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'}}}}});
+}
+
+// ─── BAR LIST ───
+function buildBarList(){
+  const el=document.getElementById('barList');el.innerHTML='';
+  const active=[...activeTerc];
+  const miB=activeMesAbsIdx;
+  const getFact=t=>FACT_MES[t]?FACT_MES[t][miB]:0;
+  const getSvc=t=>SVC_MES[t]?SVC_MES[t][miB]:0;
+  const max=Math.max(...active.map(t=>getFact(t)),1);
+  ALL_TERCS.forEach(t=>{
+    const isA=activeTerc.has(t);
+    const factV=getFact(t),svcV=getSvc(t);
+    const pct=isA&&factV>0?(factV/max*100).toFixed(1):0;
+    const col=TERC_COLORS[t];
+    el.innerHTML+=`<div class="bar-row${isA?'':' hidden'}">
+      <div class="bar-meta"><span class="bar-name">${t}</span>
+        <div class="bar-stats">
+          <span class="bar-fact" style="color:${factV>0?col:'#9BBCD8'}">${fmt(factV)}</span>
+          <span class="bar-svc">${factV===0?'Sin facturación '+MESES[miB]:svcV+' svc'}</span>
+        </div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
+    </div>`;
+  });
+}
+
+// ─── CLIENTES ───
+function buildClientes(){
+  const el=document.getElementById('clientList');el.innerHTML='';
+  const list=aggClientes();
+  if(!list.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:20px 0">Sin datos para la selección</div>';return;}
+  list.forEach(([name,svc],i)=>{
+    el.innerHTML+=`<div class="client-row"><span class="client-rank">${i+1}</span><span class="client-name">${name}</span><span class="client-svc">${svc}</span></div>`;
+  });
+}
+
+// ─── KPIs ───
+function updateKPIs(){
+  const d=aggFact();
+  document.getElementById('kpiFact').textContent=fmt(d.fact);
+  document.getElementById('kpiFactActivo').textContent=fmt(d.factA);
+  document.getElementById('kpiFactCancelado').textContent=fmt(d.factCT);
+  document.getElementById('kpiSvc').textContent=d.svc.toLocaleString('es-EC');
+  document.getElementById('kpiClients').textContent=d.cli.toLocaleString('es-EC');
+  const mesL=ALL_MESES[activeMesAbsIdx];
+  const subS=document.getElementById('kpiSvcSub');if(subS) subS.textContent='Activos + Cancelado en Telcos · '+mesL;
+  const subC=document.getElementById('kpiClientsSub');if(subC) subC.textContent='Clientes activos · '+mesL;
+  const miK=activeMesAbsIdx;
+  const actConFact=[...activeTerc].filter(t=>(FACT_MES[t]?FACT_MES[t][miK]:0)>0);
+  document.getElementById('kpiTerc').textContent=actConFact.length;
+  document.getElementById('kpiTercSub').textContent='Con facturación '+ALL_MESES[miK];
+  // estados panel
+  const elTA=document.getElementById('teActivo'),elTCT=document.getElementById('teCT');
+  const elSA=document.getElementById('teSvcActivo'),elSCT=document.getElementById('teSvcCT');
+  if(elTA) elTA.textContent=fmt(d.factA);
+  if(elTCT) elTCT.textContent=fmt(d.factCT);
+  const miP=activeMesAbsIdx;
+  const svcAP=[...activeTerc].reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][miP]:0),0);
+  const svcCTP=[...activeTerc].reduce((s,t)=>s+((FACT_CT_MES[t]?FACT_CT_MES[t][miP]:0)>0?1:0),0);
+  if(elSA) elSA.textContent=svcAP+' svc';
+  if(elSCT) elSCT.textContent=svcCTP+' svc';
+  // diferencia
+  const abrF=_tv.length?_tv[_tv.length-1]:0;
+  const marF=_tv.length>1?_tv[_tv.length-2]:abrF;
+  const diffF=abrF-marF,diffPct=marF>0?diffF/marF*100:0;
+  const prevLbl=activeMesIdx>0?MESES[activeMesIdx-1]:'—';
+  const badge=document.getElementById('kpiDiffBadge'),pct=document.getElementById('kpiDiffPct');
+  if(badge){
+    const cls=diffF>=0?'diff-pos':'diff-neg';
+    badge.className='diff-badge '+cls;
+    badge.textContent=(diffF>=0?'▲ +':'▼ ')+fmt(Math.abs(diffF))+' vs '+prevLbl;
+    pct.className='diff-pct '+cls;
+    pct.textContent=(diffF>=0?'+':'')+diffPct.toFixed(2)+'%';
+  }
+}
+
+// ─── APPLY ALL ───
+function applyFilters(){
+  buildTrend();buildHbar();buildBarList();buildTipo();
+  buildEnlace();buildCliente();buildFactTipos();buildDetalle();buildClientes();updateKPIs();
+  const all=activeTerc.size===ALL_TERCS.length;
+  const mesLabel=ALL_MESES[activeMesAbsIdx];
+  document.getElementById('filterInfo').textContent=
+    (all?'Todas':''+[...activeTerc].join(', '))+' · Corte: '+mesLabel;
+}
+
+// ─── CHIPS ───
+function buildChips(){
+  // Chips de tercerizadoras
+  ALL_TERCS.forEach(t=>{
+    const chip=document.createElement('span');
+    chip.className='chip active';chip.style.setProperty('--chip-col',TERC_COLORS[t]);
+    chip.innerHTML=`<span class="dot-chip"></span>${t}`;
+    chip.addEventListener('click',()=>{
+      if(activeTerc.has(t)){if(activeTerc.size>1) activeTerc.delete(t);}
+      else activeTerc.add(t);
+      chip.classList.toggle('active',activeTerc.has(t));
+      applyFilters();
+    });
+    document.getElementById('filterTerc').appendChild(chip);
+  });
+  // Selector de mes
+  const sel=document.getElementById('mesSelect');
+  ALL_MESES.forEach((m,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i; opt.textContent=m;
+    if(i===24) opt.selected=true; // Abr-26 por defecto
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change',()=>{
+    activeMesAbsIdx=parseInt(sel.value);
+    applyFilters();
+  });
+  // Reset
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    activeTerc=new Set(ALL_TERCS);
+    activeMesIdx=12;
+    sel.value=12;
+    document.querySelectorAll('#filterTerc .chip').forEach(c=>c.classList.add('active'));
+    applyFilters();
+  });
+}
+
+
+  // ═══════════════════════════════════════════════════════════════
+  // GOOGLE SHEETS LIVE CONNECTION
+  // Para activar: reemplaza SHEET_ID con tu ID real de Google Sheets
+  // El Sheet debe estar publicado: Archivo → Compartir → Publicar en la web
+  // ═══════════════════════════════════════════════════════════════
+  //const GS_CONFIG = {
+  //  SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',   // ← reemplazar con tu ID
+  //  enabled: true,                  // ← cambiar a true cuando configures el Sheet
+  //  refreshMinutes: 5,               // auto-refresh cada 5 minutos
+  //};
+
+  // Convierte URL pública de Google Sheets a URL de CSV por hoja
+  function gsUrl(sheetName){
+    return `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  }
+
+  // Parsea CSV a array de objetos
+  function parseCSV(text){
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+    return lines.slice(1).map(line=>{
+      const vals = line.match(/(".*?"|[^,]+)(?=,|$)/g)||[];
+      const obj = {};
+      headers.forEach((h,i)=>{ obj[h]=(vals[i]||'').replace(/"/g,'').trim(); });
+      return obj;
+    });
+  }
+
+  // Parsea una hoja matricial (TERCERIZADORA | mes1 | mes2 ...)
+  function parseMatrix(rows){
+    const result = {};
+    rows.forEach(row=>{
+      const terc = row['TERCERIZADORA'];
+      if(!terc) return;
+      result[terc] = Object.keys(row)
+        .filter(k=>k!=='TERCERIZADORA')
+        .map(k=>parseFloat(row[k])||0);
+    });
+    return result;
+  }
+
+  // Mostrar indicador de carga
+  function showLoadingBadge(msg){
+    let badge = document.getElementById('gs-badge');
+    if(!badge){
+      badge = document.createElement('div');
+      badge.id = 'gs-badge';
+      badge.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:999;background:rgba(0,176,240,0.15);border:1px solid #00B0F0;border-radius:20px;padding:6px 14px;font-size:11px;color:#00B0F0;font-family:Barlow,sans-serif;letter-spacing:1px;display:flex;align-items:center;gap:8px;';
+      document.body.appendChild(badge);
+    }
+    badge.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#00B0F0;animation:gsPulse 1s infinite"></span> ${msg}`;
+  }
+
+  function hideBadge(success, lastUpdate){
+    const badge = document.getElementById('gs-badge');
+    if(!badge) return;
+    if(success){
+      badge.innerHTML = `<span style="color:#34D399">✓</span> Google Sheets · ${lastUpdate}`;
+      badge.style.borderColor='#34D399';
+      badge.style.color='#34D399';
+      badge.style.background='rgba(52,211,153,0.1)';
+    } else {
+      badge.innerHTML = '⚠ Usando datos locales';
+      badge.style.borderColor='#FFA700';
+      badge.style.color='#FFA700';
+      badge.style.background='rgba(255,167,0,0.1)';
+    }
+  }
+
+  // Carga todos los datos desde Google Sheets
+  async function loadFromSheets(){
+    if(!GS_CONFIG.enabled || GS_CONFIG.SHEET_ID==='TU_SHEET_ID_AQUI') return;
+    showLoadingBadge('Actualizando desde Google Sheets...');
+    try {
+      const sheets = ['FACT_MES','SVC_MES','CLI_MES','FACT_CT_MES',
+                      'ABR26_DETALLE','TOP_CLIENTES','DETALLE_SERVICIO','CONFIG'];
+      const results = await Promise.all(
+        sheets.map(s=>fetch(gsUrl(s)).then(r=>r.text()).then(parseCSV))
+      );
+      const [factData,svcData,cliData,ctData,abr26Data,topData,detData,cfgData] = results;
+
+      // Actualizar matrices globales
+      const newFact = parseMatrix(factData);
+      const newSvc  = parseMatrix(svcData);
+      const newCli  = parseMatrix(cliData);
+      const newCt   = parseMatrix(ctData);
+
+      Object.keys(newFact).forEach(t=>{ if(FACT_MES[t])    FACT_MES[t]=newFact[t]; });
+      Object.keys(newSvc).forEach(t=>{  if(SVC_MES[t])     SVC_MES[t]=newSvc[t];   });
+      Object.keys(newCli).forEach(t=>{  if(CLI_MES[t])     CLI_MES[t]=newCli[t];   });
+      Object.keys(newCt).forEach(t=>{   if(FACT_CT_MES[t]) FACT_CT_MES[t]=newCt[t]; });
+
+      // Actualizar D{} con ABR26_DETALLE
+      abr26Data.forEach(row=>{
+        const t=row['TERCERIZADORA'];
+        if(D[t]){
+          D[t].factA  = parseFloat(row['FACT_ACTIVO'])||0;
+          D[t].factCT = parseFloat(row['FACT_CT'])||0;
+          D[t].fact   = D[t].factA + D[t].factCT;
+          D[t].svcA   = parseInt(row['SVC_ACTIVO'])||0;
+          D[t].svcCT  = parseInt(row['SVC_CT'])||0;
+          D[t].cli    = parseInt(row['CLIENTES'])||0;
+          D[t].enlace.PRINCIPAL.svc  = parseInt(row['ENL_PRINCIPAL_SVC'])||0;
+          D[t].enlace.PRINCIPAL.fact = parseFloat(row['ENL_PRINCIPAL_FACT'])||0;
+          D[t].enlace.BACKUP.svc     = parseInt(row['ENL_BACKUP_SVC'])||0;
+          D[t].enlace.BACKUP.fact    = parseFloat(row['ENL_BACKUP_FACT'])||0;
+          D[t].enlace.INFRAESTRUCTURA.svc  = parseInt(row['ENL_INFRA_SVC'])||0;
+          D[t].enlace.INFRAESTRUCTURA.fact = parseFloat(row['ENL_INFRA_FACT'])||0;
+          D[t].cliente.CORPORATIVO.svc  = parseInt(row['CLI_CORP_SVC'])||0;
+          D[t].cliente.CORPORATIVO.fact = parseFloat(row['CLI_CORP_FACT'])||0;
+          D[t].cliente.BANCA.svc  = parseInt(row['CLI_BANCA_SVC'])||0;
+          D[t].cliente.BANCA.fact = parseFloat(row['CLI_BANCA_FACT'])||0;
+        }
+      });
+
+      // Actualizar CONFIG
+      const cfg = {};
+      cfgData.forEach(r=>{ cfg[r['PARAMETRO']]=r['VALOR']; });
+      if(cfg['MES_ACTUAL_IDX']) activeMesAbsIdx = parseInt(cfg['MES_ACTUAL_IDX']);
+      if(cfg['CORTE_HEADER']){
+        const cd=document.getElementById('corteDate');
+        if(cd) cd.textContent=cfg['CORTE_HEADER'];
+      }
+
+      // Actualizar Top Clientes
+      // (se recarga al próximo applyFilters via aggClientes desde D{})
+
+      // Refrescar dashboard
+      applyFilters();
+
+      const now = new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+      hideBadge(true, now);
+      console.log('[GTN Sheets] Datos actualizados desde Google Sheets ✓');
+
+    } catch(err){
+      console.error('[GTN Sheets] Error cargando datos:', err);
+      hideBadge(false);
+    }
+  }
+
+  // Auto-refresh
+  function startAutoRefresh(){
+    if(!GS_CONFIG.enabled) return;
+    loadFromSheets();
+    setInterval(loadFromSheets, GS_CONFIG.refreshMinutes * 60 * 1000);
+  }
+
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>{buildChips();applyFilters();startAutoRefresh();});
+}else{buildChips();applyFilters();startAutoRefresh();}
+</script>
+</body>
+</html>
