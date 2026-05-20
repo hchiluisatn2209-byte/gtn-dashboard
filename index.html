@@ -1158,9 +1158,11 @@ function buildChips(){
         const tipoEnlCol = findCol(h=>h.includes('TIPO')&&h.includes('ENLACE'));
         const tipoCliCol = findCol(h=>h.includes('TIPO')&&h.includes('CLIENTE'));
         const detCol     = findCol(h=>h.includes('DETALLE')&&h.includes('SERV'));
+        // ID FACTURACIÓN / PILOTO — para contar servicios únicos
+        const idCol      = findCol(h=>h.includes('ID')&&h.includes('FACTURACION')&&!h.includes('NUEVO'));
 
         // Log de diagnóstico (solo primera hoja para no saturar)
-        if(sheetIdx===0) console.log('[GTN] Columnas detectadas:',{tercCol,estadoCol,factCol,clienteCol,tipoCol});
+        if(sheetIdx===0) console.log('[GTN] Columnas detectadas:',{tercCol,estadoCol,factCol,clienteCol,idCol,tipoCol});
 
         // Agrupar por tercerizadora + estado
         const byTerc={};
@@ -1168,65 +1170,67 @@ function buildChips(){
           const t=normTerc(row[tercCol]);
           const e=normEstado(row[estadoCol]);
           const f=cleanNum(row[factCol]);
-          const cli=clienteCol?row[clienteCol].trim():'';
-          const tipo=tipoCol?row[tipoCol].trim().toUpperCase():'';
-          const det=detCol?row[detCol].trim():'';
-          const tipoEnl=tipoEnlCol?row[tipoEnlCol].trim().toUpperCase():'PRINCIPAL';
-          const tipoCli=tipoCliCol?row[tipoCliCol].trim().toUpperCase():'CORPORATIVO';
+          const cli=clienteCol?(row[clienteCol]||'').trim():'';
+          const tipo=tipoCol?(row[tipoCol]||'').trim().toUpperCase():'';
+          const det=detCol?(row[detCol]||'').trim():'';
+          const tipoEnl=tipoEnlCol?(row[tipoEnlCol]||'').trim().toUpperCase():'PRINCIPAL';
+          const tipoCli=tipoCliCol?(row[tipoCliCol]||'').trim().toUpperCase():'CORPORATIVO';
+          const idFact=idCol?(row[idCol]||'').trim():'';
           if(!t||!e) return;
           if(!byTerc[t]) byTerc[t]={
             factA:0,factCT:0,svcA:0,svcCT:0,
+            idsA:new Set(),idsCT:new Set(), // IDs únicos por estado
             clientes:new Set(),detalle:{},
             tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
             enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
             cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},
           };
           if(e==='ACTIVO'){
-            byTerc[t].factA+=f; byTerc[t].svcA++;
+            byTerc[t].factA+=f;
+            // Contar ID único — si hay ID lo agrega al Set, si no, cuenta la fila
+            if(idFact) byTerc[t].idsA.add(idFact); else byTerc[t].svcA++;
             if(cli) byTerc[t].clientes.add(cli);
-            // Detalle servicio
             if(det) byTerc[t].detalle[det]=(byTerc[t].detalle[det]||0)+1;
-            // Tipo tercerizadora
             if(tipo.includes('FIBRA')) byTerc[t].tipo.FIBRA_OSCURA++;
             else if(tipo.includes('MIXTA')) byTerc[t].tipo.ULTIMA_MILLA_MIXTA++;
             else if(tipo.includes('CAPACIDAD')||tipo.includes('//')) byTerc[t].tipo.CAPACIDAD++;
             else byTerc[t].tipo.ULTIMA_MILLA++;
-            // Tipo enlace (si existe la columna, si no, asumir PRINCIPAL)
             const enl=tipoEnlCol?(tipoEnl.includes('BACKUP')?'BACKUP':tipoEnl.includes('INFRA')?'INFRAESTRUCTURA':'PRINCIPAL'):'PRINCIPAL';
             byTerc[t].enlace[enl].svc++; byTerc[t].enlace[enl].fact+=f;
-            // Tipo cliente
             const tcli=tipoCliCol?(tipoCli.includes('BANCA')?'BANCA':'CORPORATIVO'):'CORPORATIVO';
             byTerc[t].cliente[tcli].svc++; byTerc[t].cliente[tcli].fact+=f;
           } else if(e==='CT'||(e==='CANCELADO'&&f>0)){
-            byTerc[t].factCT+=f; byTerc[t].svcCT++;
+            byTerc[t].factCT+=f;
+            if(idFact) byTerc[t].idsCT.add(idFact); else byTerc[t].svcCT++;
           }
         });
 
-        // Volcar en arrays temporales
+        // Volcar en arrays temporales — svcA = IDs únicos activos, svcCT = IDs únicos CT
         ALL_TERCS.forEach(t=>{
-          const d=byTerc[t]||{factA:0,factCT:0,svcA:0,svcCT:0,clientes:new Set()};
+          const d=byTerc[t]||{factA:0,factCT:0,svcA:0,svcCT:0,idsA:new Set(),idsCT:new Set(),clientes:new Set()};
+          const svcA = d.idsA.size + d.svcA;   // IDs únicos + filas sin ID
+          const svcCT= d.idsCT.size + d.svcCT;
           const fact=d.factA+d.factCT;
           tmpFact[t][sheetIdx] = Math.round(fact*100)/100;
-          tmpSvc[t][sheetIdx]  = d.svcA+d.svcCT;
-          tmpCli[t][sheetIdx]  = d.clientes.size||d.svcA;
+          tmpSvc[t][sheetIdx]  = svcA + svcCT;
+          tmpCli[t][sheetIdx]  = d.clientes.size||svcA;
           tmpCT[t][sheetIdx]   = Math.round(d.factCT*100)/100;
         });
 
-        // Si es el mes actual (Abr-26), actualizar D{}
+        // Si es el mes actual (última hoja), actualizar D{}
         if(sheetIdx===SHEET_NAMES.length-1){
           ALL_TERCS.forEach(t=>{
             if(!D[t]) return;
-            const d=byTerc[t]||{factA:0,factCT:0,svcA:0,svcCT:0,clientes:new Set()};
+            const d=byTerc[t]||{factA:0,factCT:0,svcA:0,svcCT:0,idsA:new Set(),idsCT:new Set(),clientes:new Set()};
+            const svcA = d.idsA.size + d.svcA;
+            const svcCT= d.idsCT.size + d.svcCT;
             D[t].factA  = Math.round(d.factA*100)/100;
             D[t].factCT = Math.round(d.factCT*100)/100;
             D[t].fact   = D[t].factA+D[t].factCT;
-            D[t].svcA   = d.svcA;
-            D[t].svcCT  = d.svcCT;
-            D[t].cli    = d.clientes.size||d.svcA;
+            D[t].svcA   = svcA;
+            D[t].svcCT  = svcCT;
+            D[t].cli    = d.clientes.size||svcA;
           });
-
-  
-
         }
       });
 
