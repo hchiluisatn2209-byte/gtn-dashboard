@@ -1012,20 +1012,21 @@ function buildChips(){
 
     // Hojas mensuales del archivo de gestión (nombres EXACTOS de las pestañas de Google Sheets)
     // Orden: índice 0 = Abr-25 (BASE_ABS=12 en ALL_MESES), índice 12 = Abr-26
+    // GIDs numéricos — acceso directo a cada hoja sin depender del nombre
     const SHEET_NAMES = [
-      {key:'2025-04', name:'PROYECCION -ABRIL 2025',    altNames:['ABRIL 2025','PROYECCIÓN -ABRIL 2025']},
-      {key:'2025-05', name:'PROYECCION -MAYO 2025',     altNames:['MAYO 2025','PROYECCIÓN -MAYO 2025']},
-      {key:'2025-06', name:'PROYECCION -JUNIO 2025',    altNames:['JUNIO 2025','PROYECCIÓN -JUNIO 2025']},
-      {key:'2025-07', name:'PROYECCION -JULIO 2025',    altNames:['JULIO 2025','PROYECCIÓN -JULIO 2025']},
-      {key:'2025-08', name:'PROYECCION -AGOSTO 2025',   altNames:['AGOSTO 2025','PROYECCIÓN -AGOSTO 2025']},
-      {key:'2025-09', name:'PROYECCION -SEPTIEMBRE 2025',altNames:['SEPTIEMBRE 2025','PROYECCIÓN -SEPTIEMBRE 2025']},
-      {key:'2025-10', name:'PROYECCION -OCTUBRE 2025',  altNames:['OCTUBRE 2025','PROYECCIÓN -OCTUBRE 2025']},
-      {key:'2025-11', name:'PROYECCION -NOVIEMBRE 2025',altNames:['NOVIEMBRE 2025','PROYECCIÓN -NOVIEMBRE 2025']},
-      {key:'2025-12', name:'PROYECCION -DICIEMBRE 2025',altNames:['DICIEMBRE 2025','PROYECCIÓN -DICIEMBRE 2025']},
-      {key:'2026-01', name:'PROYECCION -ENERO 2026',    altNames:['ENERO 2026','PROYECCIÓN -ENERO 2026']},
-      {key:'2026-02', name:'PROYECCION -FEBRERO 2026',  altNames:['FEBRERO 2026','PROYECCIÓN -FEBRERO 2026']},
-      {key:'2026-03', name:'PROYECCION -MARZO 2026',    altNames:['MARZO 2026','PROYECCIÓN -MARZO 2026']},
-      {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok',altNames:['PROYECCION - ABRIL 2026 ok','ABRIL 2026','PROYECCIÓN -ABRIL 2026']},
+      {key:'2025-04', name:'PROYECCION -ABRIL 2025',     gid:'573091368'},
+      {key:'2025-05', name:'PROYECCION -MAYO 2025',      gid:'1632201815'},
+      {key:'2025-06', name:'PROYECCION -JUNIO 2025',     gid:'334926907'},
+      {key:'2025-07', name:'PROYECCION -JULIO 2025',     gid:'644495086'},
+      {key:'2025-08', name:'PROYECCION -AGOSTO 2025',    gid:'1865458072'},
+      {key:'2025-09', name:'PROYECCION -SEPTIEMBRE 2025',gid:'1090016555'},
+      {key:'2025-10', name:'PROYECCION -OCTUBRE 2025',   gid:'1680109705'},
+      {key:'2025-11', name:'PROYECCION -NOVIEMBRE 2025', gid:'652574815'},
+      {key:'2025-12', name:'PROYECCION -DICIEMBRE 2025', gid:'1034856630'},
+      {key:'2026-01', name:'PROYECCION -ENERO 2026',     gid:'1274860642'},
+      {key:'2026-02', name:'PROYECCION -FEBRERO 2026',   gid:'493659489'},
+      {key:'2026-03', name:'PROYECCION -MARZO 2026',     gid:'1291578538'},
+      {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok', gid:'754061266'},
     ];
 
     const TERC_MAP = {
@@ -1084,33 +1085,26 @@ function buildChips(){
     }
 
     async function fetchSheet(sheetObj){
-      // Usar URL /pub (requiere que el doc esté publicado en la web)
-      // El ID de publicación es diferente al ID del Sheet normal
-      const PUB_ID = '2PACX-1vQX-Au6PeRZ9wdhEEcxKhrfS33mpyPM-lrEqxfVJSHygvdlwMFQ4yrdZryEXeYjWxC6lViwZBdbZ6C9';
-      const namesToTry = [sheetObj.name, ...(sheetObj.altNames||[])];
-      for(const name of namesToTry){
-        const urls=[
-          // URL pub — respeta el parámetro sheet= cuando el doc está publicado
-          `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&sheet=${encodeURIComponent(name)}`,
-          // Fallback con el ID normal
-          `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`,
-        ];
-        for(const url of urls){
-          try{
-            const r=await fetch(url,{mode:'cors',credentials:'omit'});
-            if(r.ok){
-              const text=await r.text();
-              if(text.trim().startsWith('<!')) continue;
-              const rows=parseCSV(text);
-              if(rows.length>0){
-                console.log(`[GTN Sheets] ✓ Hoja cargada: "${name}" → ${rows.length} filas`);
-                return rows;
-              }
+      // Usar GID numérico — método más confiable, no depende del nombre de la hoja
+      const urls=[
+        `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/export?format=csv&gid=${sheetObj.gid}`,
+        `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&gid=${sheetObj.gid}`,
+      ];
+      for(const url of urls){
+        try{
+          const r=await fetch(url,{mode:'cors',credentials:'omit'});
+          if(r.ok){
+            const text=await r.text();
+            if(text.trim().startsWith('<!')) continue;
+            const rows=parseCSV(text);
+            if(rows.length>0){
+              console.log(`[GTN Sheets] ✓ "${sheetObj.name}" (gid:${sheetObj.gid}) → ${rows.length} filas`);
+              return rows;
             }
-          }catch(e){continue;}
-        }
+          }
+        }catch(e){continue;}
       }
-      console.warn('[GTN Sheets] ⚠ Hoja no encontrada:',sheetObj.name);
+      console.warn(`[GTN Sheets] ⚠ No se pudo cargar "${sheetObj.name}" (gid:${sheetObj.gid})`);
       return [];
     }
 
