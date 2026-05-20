@@ -1051,29 +1051,36 @@ function buildChips(){
     }
     function cleanNum(s){
       if(s==null||s==='') return 0;
-      // Limpiar: quitar $, espacios, y caracteres no numéricos excepto .,
-      let str=String(s).trim()
-        .replace(/\$/g,'')   // quitar símbolo $
-        .replace(/\s+/g,'')  // quitar espacios
+      let str=String(s).trim();
+      // Caso especial: "$ -" o "$ –" o solo "-" o "–" = 0
+      if(/^\$?\s*[-–—]$/.test(str)) return 0;
+      str=str
+        .replace(/\$/g,'')      // quitar símbolo $
+        .replace(/\s+/g,'')     // quitar espacios
         .replace(/[^0-9.,\-]/g,''); // solo números, punto, coma, guión
-      if(!str) return 0;
+      if(!str||str==='-') return 0;
       const hasDot=str.includes('.');
       const hasComma=str.includes(',');
       if(hasDot && hasComma){
-        // "48,804.36" → punto decimal, coma miles
         if(str.lastIndexOf('.')>str.lastIndexOf(','))
           str=str.replace(/,/g,'');
         else
           str=str.replace(/\./g,'').replace(',','.');
       } else if(hasComma && !hasDot){
         const parts=str.split(',');
-        // Si la parte decimal tiene 1-2 dígitos → es decimal
         if(parts.length===2 && parts[1].length<=2)
           str=str.replace(',','.');
         else
           str=str.replace(/,/g,'');
       }
-      return parseFloat(str)||0;
+      const n=parseFloat(str);
+      return isNaN(n)?0:n;
+    }
+
+    // Normalizar header: quita comillas, BOM, espacios, normaliza tildes para comparación
+    function normHeader(h){
+      return String(h||'').replace(/^["'\uFEFF]+|["']+$/g,'').trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
     }
 
     async function fetchSheet(sheetObj){
@@ -1127,42 +1134,35 @@ function buildChips(){
           return;
         }
 
-        // Detectar columnas disponibles (pueden variar por hoja)
+        // Detectar columnas disponibles usando normHeader (sin tildes, sin comillas, sin BOM)
         const headers = rows.length>0 ? Object.keys(rows[0]) : [];
-        const hasTerc    = headers.some(h=>h.toUpperCase().includes('TERCERIZADORA'));
-        const hasEstado  = headers.some(h=>h.toUpperCase().includes('ESTADO'));
-        const hasFact    = headers.some(h=>h.toUpperCase().includes('FACTURACIÓN')||h.toUpperCase().includes('FACTURACION'));
-        const hasCliente = headers.some(h=>h.toUpperCase().includes('CLIENTE'));
+        const nh = headers.map(normHeader);
+        const hasTerc    = nh.some(h=>h.includes('TERCERIZADORA'));
+        const hasEstado  = nh.some(h=>h==='ESTADO');
+        const hasFact    = nh.some(h=>h==='FACTURACION'||h.startsWith('FACTURACION'));
 
         if(!hasTerc||!hasEstado||!hasFact){ // estructura no reconocida → no sobreescribir
-          console.warn(`[GTN Sheets] Estructura no reconocida en hoja "${SHEET_NAMES[sheetIdx]?.name}". Headers:`, headers.slice(0,8));
+          console.warn(`[GTN Sheets] Estructura no reconocida en "${SHEET_NAMES[sheetIdx]?.name}". Headers normalizados:`, nh.slice(0,12));
           return;
         }
 
-        // Diagnóstico: mostrar primeras 2 filas para ver qué columnas hay
-        const mesNombreDiag = ALL_MESES[BASE_ABS+sheetIdx]||SHEET_NAMES[sheetIdx]?.name;
-        console.group(`[GTN] Hoja "${mesNombreDiag}" — ${rows.length} filas`);
-        console.log('Headers:', headers);
-        console.log('Fila 0:', rows[0]);
-        console.log('Fila 1:', rows[1]);
-        console.groupEnd();
+        // Helper: encontrar nombre real de columna por su versión normalizada
+        const findCol = (testFn) => headers.find((_,i)=>testFn(nh[i]));
 
-        // Detectar columna FACTURACIÓN exacta (evitar "NUEVO ID FACTURACIÓN" u otras)
-        // Prioridad: coincidencia exacta > empieza con > contiene
-        let factCol = 
-          headers.find(h=>h.trim().toUpperCase()==='FACTURACIÓN'||h.trim().toUpperCase()==='FACTURACION') ||
-          headers.find(h=>h.trim().toUpperCase().startsWith('FACTURACIÓN')||h.trim().toUpperCase().startsWith('FACTURACION')) ||
-          headers.find(h=>/^FACTUR/i.test(h.trim()) && !/ID|NUEVO|COD/i.test(h));
+        // FACTURACIÓN: exacto primero, luego startsWith, sin ID/NUEVO/COD
+        const factCol =
+          findCol(h=>h==='FACTURACION') ||
+          findCol(h=>h.startsWith('FACTURACION') && !/ID|NUEVO|COD/.test(h));
+        const tercCol    = findCol(h=>h.includes('TERCERIZADORA'));
+        const estadoCol  = findCol(h=>h==='ESTADO');
+        const clienteCol = findCol(h=>h==='CLIENTE'||(h.includes('CLIENTE')&&!h.includes('TIPO')));
+        const tipoCol    = findCol(h=>h.includes('TIPO')&&h.includes('TERC'));
+        const tipoEnlCol = findCol(h=>h.includes('TIPO')&&h.includes('ENLACE'));
+        const tipoCliCol = findCol(h=>h.includes('TIPO')&&h.includes('CLIENTE'));
+        const detCol     = findCol(h=>h.includes('DETALLE')&&h.includes('SERV'));
 
-        const tercCol    = headers.find(h=>h.toUpperCase().includes('TERCERIZADORA'));
-        const estadoCol  = headers.find(h=>h.toUpperCase().includes('ESTADO'));
-        const clienteCol = headers.find(h=>h.toUpperCase().includes('CLIENTE'));
-
-        // Columnas opcionales
-        const tipoCol    = headers.find(h=>/TIPO_TERC/i.test(h)||/TIPO TERC/i.test(h));
-        const tipoEnlCol = headers.find(h=>/TIPO.ENLACE/i.test(h));
-        const tipoCliCol = headers.find(h=>/TIPO.CLIENTE/i.test(h));
-        const detCol     = headers.find(h=>/DETALLE.SERV/i.test(h));
+        // Log de diagnóstico (solo primera hoja para no saturar)
+        if(sheetIdx===0) console.log('[GTN] Columnas detectadas:',{tercCol,estadoCol,factCol,clienteCol,tipoCol});
 
         // Agrupar por tercerizadora + estado
         const byTerc={};
