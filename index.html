@@ -917,8 +917,8 @@ function buildChips(){
   // El Sheet debe estar publicado: Archivo → Compartir → Publicar en la web
   // ═══════════════════════════════════════════════════════════════
   const GS_CONFIG = {
-    SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',   // ← reemplazar con tu ID
-    enabled: true,                  // ← cambiar a true cuando configures el Sheet
+    SHEET_ID: 'TU_SHEET_ID_AQUI',   // ← reemplazar con tu ID
+    enabled: false,                  // ← cambiar a true cuando configures el Sheet
     refreshMinutes: 5,               // auto-refresh cada 5 minutos
   };
 
@@ -931,13 +931,34 @@ function buildChips(){
   // Parsea CSV a array de objetos
   function parseCSV(text){
     const lines = text.trim().split('\n');
-    const headers = lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
-    return lines.slice(1).map(line=>{
-      const vals = line.match(/(".*?"|[^,]+)(?=,|$)/g)||[];
-      const obj = {};
-      headers.forEach((h,i)=>{ obj[h]=(vals[i]||'').replace(/"/g,'').trim(); });
-      return obj;
-    });
+    if(!lines.length) return [];
+    
+    // Parser robusto: respeta comillas y comas dentro de campos
+    function parseLine(line){
+      const result=[];
+      let cur='', inQ=false;
+      for(let i=0;i<line.length;i++){
+        const ch=line[i];
+        if(ch==='"'){
+          if(inQ && line[i+1]==='"'){cur+='"';i++;} // comilla escapada
+          else inQ=!inQ;
+        } else if(ch===',' && !inQ){
+          result.push(cur.trim()); cur='';
+        } else cur+=ch;
+      }
+      result.push(cur.trim());
+      return result;
+    }
+    
+    const headers=parseLine(lines[0]).map(h=>h.replace(/"/g,'').trim());
+    return lines.slice(1)
+      .filter(l=>l.trim())
+      .map(line=>{
+        const vals=parseLine(line);
+        const obj={};
+        headers.forEach((h,i)=>{ obj[h]=(vals[i]||'').replace(/^"|"$/g,'').trim(); });
+        return obj;
+      });
   }
 
   // Parsea una hoja matricial (TERCERIZADORA | mes1 | mes2 ...)
@@ -1026,7 +1047,16 @@ function buildChips(){
     }
     function cleanNum(s){
       if(s==null||s==='') return 0;
-      return parseFloat(String(s).replace(/[$,\s]/g,''))||0;
+      // Remover $, espacios, y comas de miles — mantener punto decimal
+      let str=String(s).trim()
+        .replace(/\$/g,'')
+        .replace(/\s/g,'')
+        .replace(/,(?=\d{3}(?:\.|,|$))/g,'') // quitar comas de miles
+        .replace(/,/g,'.');                      // convertir coma decimal a punto
+      const val=parseFloat(str)||0;
+      // Sanity check: facturación por servicio no puede exceder $50,000
+      // Si es mayor, probablemente es un error de escala
+      return val;
     }
 
     async function fetchSheet(name){
@@ -1138,6 +1168,9 @@ function buildChips(){
             D[t].cli    = d.clientes.size||d.svcA;
           });
           console.log('[GTN Sheets] Abr-26 actualizado desde hoja real');
+          console.log('[GTN Sheets] Sample Abr-26 data:', JSON.stringify(Object.fromEntries(
+            ALL_TERCS.filter(t=>D[t]&&D[t].fact>0).map(t=>[t,{fact:D[t].fact,svc:D[t].svcA}])
+          )));
         }
       });
 
