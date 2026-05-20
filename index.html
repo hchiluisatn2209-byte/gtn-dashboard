@@ -1084,11 +1084,15 @@ function buildChips(){
     }
 
     async function fetchSheet(sheetObj){
-      // Intentar con nombre principal + nombres alternativos
+      // Usar URL /pub (requiere que el doc esté publicado en la web)
+      // El ID de publicación es diferente al ID del Sheet normal
+      const PUB_ID = '2PACX-1vQX-Au6PeRZ9wdhEEcxKhrfS33mpyPM-lrEqxfVJSHygvdlwMFQ4yrdZryEXeYjWxC6lViwZBdbZ6C9';
       const namesToTry = [sheetObj.name, ...(sheetObj.altNames||[])];
       for(const name of namesToTry){
         const urls=[
-          `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(name)}`,
+          // URL pub — respeta el parámetro sheet= cuando el doc está publicado
+          `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&sheet=${encodeURIComponent(name)}`,
+          // Fallback con el ID normal
           `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`,
         ];
         for(const url of urls){
@@ -1096,7 +1100,7 @@ function buildChips(){
             const r=await fetch(url,{mode:'cors',credentials:'omit'});
             if(r.ok){
               const text=await r.text();
-              if(text.trim().startsWith('<!')) continue; // recibió HTML de error
+              if(text.trim().startsWith('<!')) continue;
               const rows=parseCSV(text);
               if(rows.length>0){
                 console.log(`[GTN Sheets] ✓ Hoja cargada: "${name}" → ${rows.length} filas`);
@@ -1106,7 +1110,7 @@ function buildChips(){
           }catch(e){continue;}
         }
       }
-      console.warn('[GTN Sheets] ⚠ Hoja no encontrada:',sheetObj.name,'(y alternativos:', sheetObj.altNames,')');
+      console.warn('[GTN Sheets] ⚠ Hoja no encontrada:',sheetObj.name);
       return [];
     }
 
