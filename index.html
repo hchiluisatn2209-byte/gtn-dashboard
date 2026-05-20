@@ -324,84 +324,30 @@ const MESES=['Abr-25','May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov
 const MI=12; // índice de Abr-26 en el array local de 13 meses
 
 // Facturación mensual por tercerizadora
-// FACT_MES extendido: 25 meses (Abr-24 → Abr-26)
-// Primeros 12 (Abr-24→Mar-25) estimados del INFORME FACT GENERAL 2024
-const FACT_MES={
-  TELEFONICA:[39500,41200,40800,40800,43100,42800,43500,44800,51200,45800,44900,44600, 44682.31,48690.93,43739.91,43739.91,47158.27,45869.01,46210.12,48316.83,55508.47,49475.75,48940.03,48726.16,48804.36],
-  CNT:       [41200,41200,41200,41100,40200,40200,39800,40800,40800,40800,41500,41500, 44078.60,44078.60,44078.60,44072.26,42705.82,42705.82,42475.82,43305.44,43305.44,43305.44,44005.32,44005.32,47354.24],
-  CIRION:    [11800,11800,11800,11650,11650,11650,11450,11200,11200,11200,11200,11200, 11405.30,11405.30,11405.30,11245.85,11245.85,11245.85,11073.35,10875.55,10875.55,10875.55,10875.55,10875.55, 8510.00],
-  PUNTONET:  [ 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,  3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50],
-  CLARO:     [ 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422, 3422,  3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3401.24],
-  IFOTONCORP:[14632,14632,14632,14632,14632,14632,14632,14632,14632,14632,14632,14632, 14631.68,14631.68,14631.68,14631.68,14631.68,14631.68, 4841.50,  287.50,  287.50,  250.00,    0.00,    0.00,    0.00],
-  ETAPA:     [  200,  200,  200,  190,  190,  180,  180,  180,  180,  180,  180,  180,   179.37,  175.68,  423.75,  412.25,  412.25,  110.37,  110.37,  110.37,  110.37,    0.00,    0.00,    0.00,    0.00],
-  SPEEDCAST: [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0.00,    0.00,    0.00,    0.00,    0.00,    0.00,    0.00,    0.00,    0.00,13031.94,16491.57,13031.94,13031.94],
-  C4:        [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0,0,0,0,0,0,0,0,0,0,0,0,322.32],
-  KONNET:    [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0,0,0,0,0,0,0,0,0,0,0,0,170.00],
-  TEUNO:     [    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,      0,0,0,0,0,0,0,0,0,0,0,0,0],
-};
+// FACT_MES — datos cargados desde Google Sheets en tiempo real
+const FACT_MES={};
+ALL_TERCS.forEach(t=>{ FACT_MES[t]=new Array(25).fill(0); });
 
 // ─── Datos Abr-26 exactos por tercerizadora ───
-const D={
-  TELEFONICA:{factA:48726.16,factCT:78.20,svcA:1025,svcCT:2,cli:342,
-    enlace:{PRINCIPAL:{svc:968,fact:43702.96},BACKUP:{svc:56,fact:4984.10},INFRAESTRUCTURA:{svc:1,fact:39.10}},
-    cliente:{CORPORATIVO:{svc:841,fact:37379.44},BANCA:{svc:184,fact:11346.72}},
-    tipo:{ULTIMA_MILLA:1014,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:1,CAPACIDAD:0},
-    detalle:{'INSTALACIÓN':940,'DATOS FWA':30,'MULTICARRIER':12,'CROSSCONEXION':6,'CONEXION TERCEROS BANRED GYE':3,'CONEXION TERCEROS BANRED UIO':3,'CONEXION TERCEROS BANCO CENTRAL':3,'VDC CONECTIVIDAD (6751)':2,'INTERCONEXION':1},
-    clientes:[['BANCO DE LA PRODUCCION S.A. PRODUBANCO',75],['COOPERATIVA DE AHORRO Y CREDITO ANDALUCIA LTDA',40],['DELI INTERNACIONAL S. A.',36],['BANCO GUAYAQUIL S.A.',32],['GRUPO BRAVCO S A',28],['INT FOOD SERVICES CORP SA',27],['Direccion General del Material DIGMAT',25],['SHEMLON S.A.',20],['BANCO DE MACHALA S A',18],['MABEL TRADING S.A.',18]],
-  },
-  CNT:{factA:47354.24,factCT:0,svcA:115,svcCT:0,cli:48,
-    enlace:{PRINCIPAL:{svc:114,fact:47354.24},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:1,fact:0}},
-    cliente:{CORPORATIVO:{svc:73,fact:40563.54},BANCA:{svc:42,fact:6790.70}},
-    tipo:{ULTIMA_MILLA:105,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
-    detalle:{'INSTALACIÓN':104,'CROSSCONEXION':6,'VDC CONECTIVIDAD (6751)':2,'OTROS':3},
-    clientes:[['BANCO DE MACHALA S A',12],['BANCO DEL PACIFICO S.A.',8],['BANCO GUAYAQUIL S.A.',6],['EMSAAIRPORT SERVICES CEM',6],['SUPERDEPORTE S.A.',5]],
-  },
-  CIRION:{factA:8510.00,factCT:0,svcA:57,svcCT:0,cli:23,
-    enlace:{PRINCIPAL:{svc:48,fact:7026.50},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:9,fact:1483.50}},
-    cliente:{CORPORATIVO:{svc:41,fact:5669.50},BANCA:{svc:16,fact:2840.50}},
-    tipo:{ULTIMA_MILLA:55,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
-    detalle:{'CROSSCONEXION':34,'INFRAESTRUCTURE':12,'COLLOCATION':4,'HOUSING':4,'INSTALACIÓN':2,'OTROS':1},
-    clientes:[['REPORNE',10],['6 HILOS DE FIBRA DC INAQUITO',6],['Dipac Manta S A',5],['BANCO AMIBANK S A',4],['RTC',4]],
-  },
-  PUNTONET:{factA:3599.50,factCT:0,svcA:10,svcCT:0,cli:6,
-    enlace:{PRINCIPAL:{svc:10,fact:3599.50},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
-    cliente:{CORPORATIVO:{svc:3,fact:1161.50},BANCA:{svc:7,fact:2438.00}},
-    tipo:{ULTIMA_MILLA:10,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
-    detalle:{'INSTALACIÓN':10},
-    clientes:[['BANCO DE MACHALA S A',5],['SHEMLON S.A.',1],['PYCCA S.A',1],['BANCO GUAYAQUIL S.A.',1],['Banco Bolivariano',1]],
-  },
-  CLARO:{factA:3401.24,factCT:0,svcA:93,svcCT:0,cli:21,
-    enlace:{PRINCIPAL:{svc:93,fact:3401.24},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
-    cliente:{CORPORATIVO:{svc:76,fact:1597.52},BANCA:{svc:17,fact:1803.72}},
-    tipo:{ULTIMA_MILLA:93,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
-    detalle:{'INSTALACIÓN':93},
-    clientes:[['Direccion General del Material DIGMAT',25],['BT SOLUTIONS',9],['BPE ELECTRONIC',9],['Banco Procredit',9],['CEDIA',7]],
-  },
-  C4:{factA:322.32,factCT:0,svcA:16,svcCT:0,cli:15,
-    enlace:{PRINCIPAL:{svc:16,fact:322.32},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
-    cliente:{CORPORATIVO:{svc:14,fact:269.15},BANCA:{svc:2,fact:53.17}},
-    tipo:{ULTIMA_MILLA:16,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
-    detalle:{'INSTALACIÓN':16},
-    clientes:[['Corporacion Lanec S.A.',2],['MCG DIAGNOSTICA',1],['HUMANITAS S.A.',1],['TALMAX S.A.',1],['JOALPA',1]],
-  },
-  KONNET:{factA:170.00,factCT:0,svcA:5,svcCT:0,cli:5,
-    enlace:{PRINCIPAL:{svc:5,fact:170.00},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
-    cliente:{CORPORATIVO:{svc:4,fact:136.00},BANCA:{svc:1,fact:34.00}},
-    tipo:{ULTIMA_MILLA:5,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
-    detalle:{'INSTALACIÓN':5},
-    clientes:[['Banco Internacional',1],['Aseguradora del Sur',1],['Tutti',1],['Junta Beneficencia Gye',1],['Dmujeres',1]],
-  },
-  SPEEDCAST:{factA:13031.94,factCT:0,svcA:76,svcCT:0,cli:3,
-    enlace:{PRINCIPAL:{svc:76,fact:13031.94},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},
-    cliente:{CORPORATIVO:{svc:76,fact:13031.94},BANCA:{svc:0,fact:0}},
-    tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:76},
-    detalle:{'STARLINK':76},
-    clientes:[['FUERZAS ARMADAS',50],['MARINA MERCANTE',16],['POLICIA NACIONAL',10]],
-  },
-  IFOTONCORP:{factA:0,factCT:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
-  ETAPA:{factA:0,factCT:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
-  TEUNO:{factA:0,factCT:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
-};
+// D{} — datos Abr-26 cargados desde Google Sheets en tiempo real
+const D={};
+ALL_TERCS.forEach(t=>{
+  D[t]={
+    factA:0, factCT:0, fact:0, svcA:0, svcCT:0, cli:0,
+    enlace:{
+      PRINCIPAL:{svc:0,fact:0},
+      BACKUP:{svc:0,fact:0},
+      INFRAESTRUCTURA:{svc:0,fact:0}
+    },
+    cliente:{
+      CORPORATIVO:{svc:0,fact:0},
+      BANCA:{svc:0,fact:0}
+    },
+    tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},
+    detalle:{},
+    clientes:[],
+  };
+});
 // calc fact
 ALL_TERCS.forEach(t=>{D[t].fact=D[t].factA+D[t].factCT;});
 
@@ -413,49 +359,16 @@ const fmtk=v=>'$'+(v/1000).toFixed(1)+'k';
 
 // ─── Helpers de agregación ───
 // ══ Matrices históricas por mes (0=Abr-25…12=Abr-26) ══
-// CLI_MES extendido: 25 meses (Abr-24 → Abr-26)
-const CLI_MES={
-  TELEFONICA:[280,285,288,288,295,298,300,305,350,310,308,309, 308,309,307,307,308,308,309,323,379,379,379,379,342],
-  CNT:       [ 45, 45, 45, 44, 47, 47, 46, 48,  48, 48, 48, 48,  48, 48, 48, 47, 49, 49, 48, 50,  50,  50,  50,  50,  48],
-  CIRION:    [ 30, 30, 30, 32, 32, 32, 32, 30,  30, 30, 30, 30,  28, 28, 28, 31, 31, 31, 31, 28,  28,  28,  28,  28,  23],
-  PUNTONET:  [  6,  6,  6,  6,  6,  6,  6,  6,   6,  6,  6,  6,   6,  6,  6,  6,  6,  6,  6,  6,   6,   6,   6,   6,   6],
-  CLARO:     [ 21, 21, 21, 21, 21, 21, 21, 21,  21, 21, 21, 21,  21, 21, 21, 21, 21, 21, 21, 21,  21,  21,  21,  21,  21],
-  SPEEDCAST: [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   3,   5,   3,   3],
-  IFOTONCORP:[ 12, 12, 12, 12, 12, 12, 12, 12,  12, 12, 12, 12,  12, 12, 12, 12, 12, 12,  2,  1,   1,  12,   0,   0,   0],
-  ETAPA:     [  2,  2,  2,  2,  2,  2,  2,  2,   2,  2,  2,  2,   2,  3,  1,  1,  1,  1,  1,  1,   1,   0,   0,   0,   0],
-  C4:        [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,  15],
-  KONNET:    [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   5],
-  TEUNO:     [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0],
-};
-// SVC_MES extendido: 25 meses (Abr-24 → Abr-26)
-const SVC_MES={
-  TELEFONICA:[790,800,820,820,835,838,840,848,905,830,840,845, 849,860,898,898,921,924,931,950,1014,1019,1020,1024,1027],
-  CNT:       [ 90, 90, 90, 88, 96, 96, 94, 96,  96, 96, 97, 97,  98, 98, 98, 96,104,104,103,105, 105, 105, 106, 106, 115],
-  CIRION:    [68,68,68,70,70,70,69,67,67,67,67,67,65,65,65,65,65,65,57,57,57,57,57,60,57],
-  PUNTONET:  [ 10, 10, 10, 10, 10, 10, 10, 10,  10, 10, 10, 10,  10, 10, 10, 10, 10, 10, 10, 10,  10,  10,  10,  10,  10],
-  CLARO:     [ 94, 94, 94, 94, 94, 94, 94, 94,  94, 94, 94, 94,  94, 94, 94, 94, 94, 94, 94, 94,  94,  94,  94,  94,  93],
-  IFOTONCORP:[ 14, 14, 14, 14, 14, 14, 14, 14,  14, 14, 14, 14,  14, 14, 14, 14, 14, 14,  2,  1,   1,  14,   0,   0,   0],
-  ETAPA:     [  4,  4,  4,  4,  4,  4,  4,  4,   4,  4,  4,  4,   4,  5,  5,  4,  4,  3,  3,  3,   3,   0,   0,   0,   0],
-  SPEEDCAST: [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,  76, 112,  76,  76],
-  C4:        [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,  16],
-  KONNET:    [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   5],
-  TEUNO:     [  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0],
-};
+// CLI_MES — datos cargados desde Google Sheets en tiempo real
+const CLI_MES={};
+ALL_TERCS.forEach(t=>{ CLI_MES[t]=new Array(25).fill(0); });
+// SVC_MES — datos cargados desde Google Sheets en tiempo real
+const SVC_MES={};
+ALL_TERCS.forEach(t=>{ SVC_MES[t]=new Array(25).fill(0); });
 
-const FACT_CT_MES={
-  // 25 meses (Abr-24→Abr-26): primeros 12 históricos sin datos CT conocidos = 0
-  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 122.89,39.10,31.53,31.53,69.27,96.96,0,0,0,0,0,0,78.20],
-  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,517.50,517.50,517.50,517.50,517.50,0],
-  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,313.38,301.88,301.88,0,0,0,0,0,0,0,0],
-  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  C4:        [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0],
-};
+// FACT_CT_MES — datos cargados desde Google Sheets en tiempo real
+const FACT_CT_MES={};
+ALL_TERCS.forEach(t=>{ FACT_CT_MES[t]=new Array(25).fill(0); });
 function aggFact(){
   const mi=activeMesAbsIdx;
   let factA=0,factCT=0,svc=0,cli=0;
@@ -890,12 +803,11 @@ function buildChips(){
   });
   // Selector de mes
   const sel=document.getElementById('mesSelect');
-  ALL_MESES.forEach((m,i)=>{
-    const opt=document.createElement('option');
-    opt.value=i; opt.textContent=m;
-    if(i===24) opt.selected=true; // Abr-26 por defecto
-    sel.appendChild(opt);
-  });
+  // El selector se puebla en initDashboard después de cargar datos
+  // Solo registrar el evento de cambio
+  if(sel.options.length>0){
+    // Ya fue poblado (recarga)
+  }
   sel.addEventListener('change',()=>{
     activeMesAbsIdx=parseInt(sel.value);
     applyFilters();
@@ -917,9 +829,9 @@ function buildChips(){
   // El Sheet debe estar publicado: Archivo → Compartir → Publicar en la web
   // ═══════════════════════════════════════════════════════════════
   const GS_CONFIG = {
-    SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',   // ← reemplazar con tu ID
-    enabled: true,                  // ← cambiar a true cuando configures el Sheet
-    refreshMinutes: 5,               // auto-refresh cada 5 minutos
+    SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',
+    enabled: true,       // siempre activo — datos 100% desde Google Sheets
+    refreshMinutes: 5,
   };
 
   // Convierte URL pública de Google Sheets a URL de CSV por hoja
@@ -1203,10 +1115,24 @@ function buildChips(){
         }
       });
 
+      // Identificar el último mes con datos reales y actualizar el corte
+      let lastMesWithData = BASE_ABS; // empezar desde Abr-25
+      for(let i=BASE_ABS; i<BASE_ABS+SHEET_NAMES.length; i++){
+        const totalFact = ALL_TERCS.reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][i]:0),0);
+        if(totalFact>0) lastMesWithData=i;
+      }
+      activeMesAbsIdx = lastMesWithData;
+      // Actualizar selector de mes
+      const selEl=document.getElementById('mesSelect');
+      if(selEl){ selEl.value=activeMesAbsIdx; }
+      // Actualizar header
+      const cd=document.getElementById('corteDate');
+      if(cd) cd.textContent=ALL_MESES[activeMesAbsIdx];
+
       applyFilters();
       const now=new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
       hideBadge(true, now);
-      console.log('[GTN Sheets] ✓ Datos actualizados desde hojas mensuales reales');
+      console.log('[GTN Sheets] ✓ Datos actualizados. Corte:', ALL_MESES[activeMesAbsIdx]);
 
     }catch(err){
       console.error('[GTN Sheets] Error:', err.message||err);
@@ -1223,8 +1149,28 @@ function buildChips(){
 
 
 if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',()=>{buildChips();applyFilters();startAutoRefresh();});
-}else{buildChips();applyFilters();startAutoRefresh();}
+  document.addEventListener('DOMContentLoaded', initDashboard);
+}else{ initDashboard(); }
+
+function initDashboard(){
+  buildChips();
+  // Mostrar estado de carga inicial
+  showLoadingBadge('Cargando datos desde Google Sheets...');
+  // Cargar datos del Sheet antes de renderizar
+  loadFromSheets().then(()=>{
+    // Una vez cargados los datos, construir chips del selector de mes
+    const sel=document.getElementById('mesSelect');
+    if(sel && sel.options.length===0){
+      ALL_MESES.forEach((m,i)=>{
+        const opt=document.createElement('option');
+        opt.value=i; opt.textContent=m;
+        if(i===activeMesAbsIdx) opt.selected=true;
+        sel.appendChild(opt);
+      });
+    }
+    startAutoRefresh();
+  });
+}
 </script>
 </body>
 </html>
