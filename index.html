@@ -916,11 +916,11 @@ function buildChips(){
   // Para activar: reemplaza SHEET_ID con tu ID real de Google Sheets
   // El Sheet debe estar publicado: Archivo → Compartir → Publicar en la web
   // ═══════════════════════════════════════════════════════════════
-  //const GS_CONFIG = {
-  //  SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',   // ← reemplazar con tu ID
-  //  enabled: true,                  // ← cambiar a true cuando configures el Sheet
-  //  refreshMinutes: 5,               // auto-refresh cada 5 minutos
-  //};
+  const GS_CONFIG = {
+  SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',   // ← reemplazar con tu ID
+  enabled: true,                  // ← cambiar a true cuando configures el Sheet
+  refreshMinutes: 5,               // auto-refresh cada 5 minutos
+  };
 
   // Convierte URL pública de Google Sheets a URL de CSV por hoja
   function gsUrl(sheetName){
