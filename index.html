@@ -273,23 +273,16 @@
       <div class="trend-estados">
         <div class="te-item">
           <span class="te-dot" style="background:var(--verde)"></span>
-          <span class="te-label">Activo</span>
+          <span class="te-label" style="font-size:9px;line-height:1.3">Activo en Telcos<br><span style="color:rgba(155,188,216,0.6);font-size:8px;text-transform:none;letter-spacing:0">Con valores a facturar</span></span>
           <span class="te-val" id="teActivo">—</span>
           <span class="te-svc" id="teSvcActivo">—</span>
         </div>
         <div class="te-sep"></div>
         <div class="te-item">
           <span class="te-dot" style="background:var(--naranja2)"></span>
-          <span class="te-label">Cancelado en Telcos</span>
+          <span class="te-label" style="font-size:9px;line-height:1.3">Cancelado en Telcos<br><span style="color:rgba(155,188,216,0.6);font-size:8px;text-transform:none;letter-spacing:0">En regularización con Comercial</span></span>
           <span class="te-val" id="teCT">—</span>
           <span class="te-svc" id="teSvcCT">—</span>
-        </div>
-        <div class="te-sep"></div>
-        <div class="te-item">
-          <span class="te-dot" style="background:var(--muted)"></span>
-          <span class="te-label">Cancelado (sin factura)</span>
-          <span class="te-val">$0,00</span>
-          <span class="te-svc">155 svc</span>
         </div>
       </div>
     </div>
@@ -753,11 +746,7 @@ function buildTrend(){
               const svc=(SVC_MES[t]&&SVC_MES[t][absIdx]!=null)?SVC_MES[t][absIdx]:0;
               return ' '+t+': '+fmt(ctx.parsed.y)+'  |  '+svc.toLocaleString('es-EC')+' svc';
             },
-            afterBody:ctx=>{
-              if(ctx[0]&&ctx[0].dataIndex===_tv.length-1&&activeMesAbsIdx===24)
-                return['','⚠ Baja inventario DC Cirion.','  + $78,20 Cancelado en Telcos.'];
-              return[];
-            }
+            afterBody:ctx=>{ return[]; }
           }},
       },
       scales:{x:{ticks:{color:'#9BBCD8',font:{size:9.5},maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'rgba(255,255,255,0.08)'}},
@@ -848,19 +837,34 @@ function buildFactTipos(){
   if(factTiposChart) factTiposChart.destroy();
   const ctx=document.getElementById('factTiposChart').getContext('2d');
   const e=aggEnlace(),c=aggCliente();
-  const eF=[e.PRINCIPAL.fact,e.BACKUP.fact,e.INFRAESTRUCTURA.fact];
-  const cF=[c.CORPORATIVO.fact,c.BANCA.fact];
   factTiposChart=new Chart(ctx,{type:'bar',
-    data:{labels:['PRINCIPAL','BACKUP','INFRAESTRUC.','','CORPORATIVO','BANCA'],
+    data:{
+      labels:['PRINCIPAL','BACKUP','INFRAESTRUC.','CORPORATIVO','BANCA'],
       datasets:[
-        {label:'Tipo Enlace',data:[...eF,null,null,null],backgroundColor:[C.turquesa,C.amarillo,C.morado,'transparent','transparent','transparent'],borderRadius:6,borderWidth:0,barPercentage:0.6},
-        {label:'Tipo Cliente',data:[null,null,null,null,...cF],backgroundColor:['transparent','transparent','transparent','transparent',C.magenta,C.azulC],borderRadius:6,borderWidth:0,barPercentage:0.6},
+        {label:'Tipo Enlace',
+         data:[e.PRINCIPAL.fact,e.BACKUP.fact,e.INFRAESTRUCTURA.fact,null,null],
+         backgroundColor:[C.turquesa,C.amarillo,C.morado,null,null],
+         borderRadius:6,borderWidth:0,barPercentage:0.75,categoryPercentage:0.8},
+        {label:'Tipo Cliente',
+         data:[null,null,null,c.CORPORATIVO.fact,c.BANCA.fact],
+         backgroundColor:[null,null,null,C.magenta,C.azulC],
+         borderRadius:6,borderWidth:0,barPercentage:0.75,categoryPercentage:0.8},
       ]},
-    options:{responsive:true,maintainAspectRatio:false,showValueLabels:true,labelFormatter:v=>v?fmtk(v):'',layout:{padding:{top:28}},
-      plugins:{legend:{display:true,position:'top',labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:16}},
-        tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,bodyColor:'#fff',titleColor:C.turquesa,callbacks:{label:ctx=>ctx.parsed.y?' '+fmt(ctx.parsed.y):''}}},
-      scales:{x:{ticks:{color:'#9BBCD8',font:{size:10}},grid:{display:false},border:{color:'rgba(255,255,255,0.08)'}},
-        y:{ticks:{color:'#9BBCD8',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'}}}}});
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      showValueLabels:true,labelFormatter:v=>v?fmtk(v):'',
+      layout:{padding:{top:30,left:4,right:4,bottom:4}},
+      plugins:{
+        legend:{display:true,position:'top',labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:14}},
+        tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,bodyColor:'#fff',titleColor:C.turquesa,
+          callbacks:{label:ctx=>ctx.parsed.y?' '+fmt(ctx.parsed.y):''}}
+      },
+      scales:{
+        x:{ticks:{color:'#9BBCD8',font:{size:10},maxRotation:0},grid:{display:false},border:{color:'rgba(255,255,255,0.08)'}},
+        y:{ticks:{color:'#9BBCD8',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'}}
+      }
+    }
+  });
 }
 
 // ─── BAR LIST ───
