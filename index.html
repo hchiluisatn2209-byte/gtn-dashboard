@@ -78,6 +78,7 @@
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px}
   .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:22px}
   .grid-trend{display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:22px}
+  .grid-trend-fact{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:22px}
   .card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:22px;overflow:hidden;animation:fadeUp .5s ease both;animation-delay:.25s}
   .card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
   .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--turquesa),#5D34B0);flex-shrink:0}
@@ -167,6 +168,8 @@
 </div>
 
 <main>
+
+  <!-- 1. INDICADORES CLAVE -->
   <div class="section-title">Indicadores Clave</div>
   <div class="kpi-strip">
     <div class="kpi-card">
@@ -202,8 +205,44 @@
     </div>
   </div>
 
+  <!-- 2. ANÁLISIS POR TIPO DE ENLACE Y CLIENTE -->
+  <div class="section-title">Análisis por Tipo de Enlace y Cliente</div>
+  <div class="grid-3-donuts">
+    <div class="card donut-card-sm">
+      <div class="card-title"><span class="dot"></span>Tipo de Servicio</div>
+      <div class="donut-row-layout">
+        <div class="donut-wrap-sm">
+          <canvas id="tipoChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
+          <div class="donut-center"><div class="big" id="tipoTotal">—</div><div class="small">Servicios</div></div>
+        </div>
+        <div class="legend-list" id="tipoLegend"></div>
+      </div>
+    </div>
+    <div class="card donut-card-sm">
+      <div class="card-title"><span class="dot"></span>Tipo de Enlace</div>
+      <div class="donut-row-layout">
+        <div class="donut-wrap-sm">
+          <canvas id="enlaceChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
+          <div class="donut-center"><div class="big" id="enlaceTotal">—</div><div class="small">Servicios</div></div>
+        </div>
+        <div class="legend-list" id="enlaceLegend"></div>
+      </div>
+    </div>
+    <div class="card donut-card-sm">
+      <div class="card-title"><span class="dot"></span>Tipo de Cliente</div>
+      <div class="donut-row-layout">
+        <div class="donut-wrap-sm">
+          <canvas id="clienteChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
+          <div class="donut-center"><div class="big" id="clienteTotal">—</div><div class="small">Servicios</div></div>
+        </div>
+        <div class="legend-list" id="clienteLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. TENDENCIA + DETALLE DE FACTURACIÓN (misma altura) -->
   <div class="section-title">Tendencia de Facturación · Últimos 13 Meses</div>
-  <div class="grid-trend">
+  <div class="grid-trend-fact">
     <div class="card">
       <div class="card-title"><span class="dot"></span>Facturación Mensual</div>
       <canvas id="trendChart" height="200"></canvas>
@@ -239,10 +278,14 @@
           <span class="te-svc">155 svc</span>
         </div>
       </div>
-
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
+      <canvas id="hbarChart" height="240"></canvas>
     </div>
   </div>
 
+  <!-- 4. ANÁLISIS POR TERCERIZADORA Y CLIENTES -->
   <div class="section-title">Análisis por Tercerizadora y Clientes</div>
   <div class="grid-2">
     <div class="card">
@@ -254,7 +297,7 @@
       <div class="client-list" id="clientList"></div>
     </div>
   </div>
-  <div class="grid-2" style="margin-bottom:22px">
+  <div class="grid-2">
     <div class="card">
       <div class="card-title"><span class="dot"></span>Detalle de Servicio – N° Servicios</div>
       <canvas id="detalleChart" height="180"></canvas>
@@ -265,47 +308,6 @@
     </div>
   </div>
 
-  <div class="section-title">Análisis por Tipo de Enlace y Cliente</div>
-  <div class="grid-3-donuts">
-    <div class="card donut-card-sm">
-      <div class="card-title"><span class="dot"></span>Tipo de Servicio</div>
-      <div class="donut-row-layout">
-        <div class="donut-wrap-sm">
-          <canvas id="tipoChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
-          <div class="donut-center"><div class="big" id="tipoTotal">—</div><div class="small">Servicios</div></div>
-        </div>
-        <div class="legend-list" id="tipoLegend"></div>
-      </div>
-    </div>
-    <div class="card donut-card-sm">
-      <div class="card-title"><span class="dot"></span>Tipo de Enlace</div>
-      <div class="donut-row-layout">
-        <div class="donut-wrap-sm">
-          <canvas id="enlaceChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
-          <div class="donut-center"><div class="big" id="enlaceTotal">—</div><div class="small">Servicios</div></div>
-        </div>
-        <div class="legend-list" id="enlaceLegend"></div>
-      </div>
-    </div>
-    <div class="card donut-card-sm">
-      <div class="card-title"><span class="dot"></span>Tipo de Cliente</div>
-      <div class="donut-row-layout">
-        <div class="donut-wrap-sm">
-          <canvas id="clienteChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
-          <div class="donut-center"><div class="big" id="clienteTotal">—</div><div class="small">Servicios</div></div>
-        </div>
-        <div class="legend-list" id="clienteLegend"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-title">Detalle de Facturación</div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
-      <canvas id="hbarChart" height="240"></canvas>
-    </div>
-  </div>
 </main>
 <footer>Realizado por: Proyectos e Implementación · Telconet &nbsp;|&nbsp; Fuente: TERC_GESTIÓN_FACTURACIÓN.xlsx &nbsp;|&nbsp; Generado Abril 2026</footer>
 
