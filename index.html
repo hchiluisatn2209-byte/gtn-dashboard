@@ -130,9 +130,10 @@
   .grid-analisis{display:grid;grid-template-columns:1fr 1.8fr;gap:20px;margin-bottom:22px}
   .donuts-col{display:flex;flex-direction:column;gap:14px}
   .charts-col{display:flex;flex-direction:column;gap:14px}
-  .donut-card-sm{padding:16px 18px}
-  .donut-row-layout{display:flex;align-items:center;gap:16px}
-  .donut-wrap-sm{position:relative;display:flex;justify-content:center;align-items:center;flex-shrink:0;width:130px;height:130px}
+  .grid-3-donuts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+  .donut-card-sm{padding:14px 16px}
+  .donut-row-layout{display:flex;align-items:center;gap:14px}
+  .donut-wrap-sm{position:relative;display:flex;justify-content:center;align-items:center;flex-shrink:0;width:120px;height:120px}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
   @keyframes gsPulse{0%,100%{opacity:1}50%{opacity:0.3}}
 </style>
@@ -253,51 +254,47 @@
       <div class="client-list" id="clientList"></div>
     </div>
   </div>
+  <div class="grid-2" style="margin-bottom:22px">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Detalle de Servicio – N° Servicios</div>
+      <canvas id="detalleChart" height="180"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Facturación por Tipo de Enlace y Tipo de Cliente ($)</div>
+      <canvas id="factTiposChart" height="180"></canvas>
+    </div>
+  </div>
 
-  <div class="section-title">Análisis por Tipo de Enlace, Cliente y Detalle de Servicio</div>
-  <div class="grid-analisis">
-    <!-- Columna izquierda: 3 donuts apilados compactos -->
-    <div class="donuts-col">
-      <div class="card donut-card-sm">
-        <div class="card-title"><span class="dot"></span>Tipo de Servicio</div>
-        <div class="donut-row-layout">
-          <div class="donut-wrap-sm">
-            <canvas id="tipoChart" width="130" height="130" style="max-height:130px;max-width:130px;"></canvas>
-            <div class="donut-center"><div class="big" id="tipoTotal">—</div><div class="small">Servicios</div></div>
-          </div>
-          <div class="legend-list" id="tipoLegend"></div>
+  <div class="section-title">Análisis por Tipo de Enlace y Cliente</div>
+  <div class="grid-3-donuts">
+    <div class="card donut-card-sm">
+      <div class="card-title"><span class="dot"></span>Tipo de Servicio</div>
+      <div class="donut-row-layout">
+        <div class="donut-wrap-sm">
+          <canvas id="tipoChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
+          <div class="donut-center"><div class="big" id="tipoTotal">—</div><div class="small">Servicios</div></div>
         </div>
-      </div>
-      <div class="card donut-card-sm">
-        <div class="card-title"><span class="dot"></span>Tipo de Enlace</div>
-        <div class="donut-row-layout">
-          <div class="donut-wrap-sm">
-            <canvas id="enlaceChart" width="130" height="130" style="max-height:130px;max-width:130px;"></canvas>
-            <div class="donut-center"><div class="big" id="enlaceTotal">—</div><div class="small">Servicios</div></div>
-          </div>
-          <div class="legend-list" id="enlaceLegend"></div>
-        </div>
-      </div>
-      <div class="card donut-card-sm">
-        <div class="card-title"><span class="dot"></span>Tipo de Cliente</div>
-        <div class="donut-row-layout">
-          <div class="donut-wrap-sm">
-            <canvas id="clienteChart" width="130" height="130" style="max-height:130px;max-width:130px;"></canvas>
-            <div class="donut-center"><div class="big" id="clienteTotal">—</div><div class="small">Servicios</div></div>
-          </div>
-          <div class="legend-list" id="clienteLegend"></div>
-        </div>
+        <div class="legend-list" id="tipoLegend"></div>
       </div>
     </div>
-    <!-- Columna derecha: detalle + facturación por tipos -->
-    <div class="charts-col">
-      <div class="card">
-        <div class="card-title"><span class="dot"></span>Detalle de Servicio – N° Servicios</div>
-        <canvas id="detalleChart" height="220"></canvas>
+    <div class="card donut-card-sm">
+      <div class="card-title"><span class="dot"></span>Tipo de Enlace</div>
+      <div class="donut-row-layout">
+        <div class="donut-wrap-sm">
+          <canvas id="enlaceChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
+          <div class="donut-center"><div class="big" id="enlaceTotal">—</div><div class="small">Servicios</div></div>
+        </div>
+        <div class="legend-list" id="enlaceLegend"></div>
       </div>
-      <div class="card">
-        <div class="card-title"><span class="dot"></span>Facturación por Tipo de Enlace y Tipo de Cliente ($)</div>
-        <canvas id="factTiposChart" height="220"></canvas>
+    </div>
+    <div class="card donut-card-sm">
+      <div class="card-title"><span class="dot"></span>Tipo de Cliente</div>
+      <div class="donut-row-layout">
+        <div class="donut-wrap-sm">
+          <canvas id="clienteChart" width="120" height="120" style="max-height:120px;max-width:120px;"></canvas>
+          <div class="donut-center"><div class="big" id="clienteTotal">—</div><div class="small">Servicios</div></div>
+        </div>
+        <div class="legend-list" id="clienteLegend"></div>
       </div>
     </div>
   </div>
