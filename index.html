@@ -250,10 +250,10 @@
     </div>
   </div>
 
-  <!-- 3. FACTURACIÓN POR TERCERIZADORA (fila completa, mismo nivel que donuts) -->
-  <div class="card" style="margin-bottom:16px;">
+  <!-- 3. FACTURACIÓN POR TERCERIZADORA (misma altura que fila de donuts) -->
+  <div class="card" style="margin-bottom:16px;height:220px;display:flex;flex-direction:column;overflow:hidden;">
     <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
-    <canvas id="hbarChart" height="160"></canvas>
+    <canvas id="hbarChart" style="flex:1;min-height:0;width:100%!important;"></canvas>
   </div>
 
   <!-- 4. TENDENCIA DE FACTURACIÓN (ancho completo) -->
