@@ -780,35 +780,8 @@ function buildTipo(){
     [C.turquesa,C.magenta,C.naranja,'#38BDF8',C.morado]);
 }
 
-// ─── HBAR ───
+// ─── HBAR (ahora vertical: barras de facturación + línea de servicios) ───
 let hbarChart;
-const dualLabelsPlugin={id:'dualLabels',afterDatasetsDraw(chart){
-  const{ctx,scales}=chart;
-  const xFact=scales['xFact'], xSvc=scales['xSvc'];
-  if(!xFact||!xSvc) return;
-  chart.data.datasets.forEach((ds,di)=>{
-    const meta=chart.getDatasetMeta(di);
-    if(meta.hidden) return;
-    meta.data.forEach((bar,i)=>{
-      const val=ds.data[i]; if(!val||val<=0) return;
-      const isFactDs=di===0;
-      const label=isFactDs?fmt(val):val.toLocaleString('es-EC')+' svc';
-      const xScale=isFactDs?xFact:xSvc;
-      const bx=xScale.getPixelForValue(val);
-      const avail=bx-xFact.left;
-      ctx.save();
-      ctx.font=isFactDs?'600 11px Barlow,sans-serif':'500 10px Barlow,sans-serif';
-      ctx.textBaseline='middle';
-      ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=3;
-      const tw=ctx.measureText(label).width;
-      if(avail>tw+20){ctx.textAlign='right';ctx.fillStyle='#fff';ctx.fillText(label,bx-6,bar.y);}
-      else{ctx.textAlign='left';ctx.fillStyle='#fff';ctx.fillText(label,bx+6,bar.y);}
-      ctx.restore();
-    });
-  });
-}};
-Chart.register(dualLabelsPlugin);
-
 function buildHbar(){
   if(hbarChart) hbarChart.destroy();
   const ctx=document.getElementById('hbarChart').getContext('2d');
@@ -824,32 +797,66 @@ function buildHbar(){
       colors.push(TERC_COLORS[t]);
     }
   });
-  hbarChart=new Chart(ctx,{type:'bar',
+  hbarChart=new Chart(ctx,{
+    type:'bar',
     data:{labels,datasets:[
-      {label:'Facturación ($)',data:dataFact,backgroundColor:colors,
-       borderRadius:4,borderWidth:0,xAxisID:'xFact',barPercentage:0.45,categoryPercentage:0.85},
-      {label:'N° Servicios',data:dataSvc,
-       backgroundColor:colors.map(c=>c+'55'),
-       borderColor:colors,borderWidth:1.5,
-       borderRadius:4,xAxisID:'xSvc',barPercentage:0.45,categoryPercentage:0.85},
+      {type:'bar',label:'Facturación ($)',data:dataFact,
+       backgroundColor:colors,borderRadius:6,borderWidth:0,
+       yAxisID:'yFact',order:2,barPercentage:0.6,categoryPercentage:0.75},
+      {type:'line',label:'N° Servicios',data:dataSvc,
+       borderColor:C.azulC2,backgroundColor:'rgba(100,180,245,0.15)',
+       pointBackgroundColor:colors,pointBorderColor:'#fff',
+       pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,
+       borderWidth:2,tension:0.3,fill:false,
+       yAxisID:'ySvc',order:1},
     ]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      layout:{padding:{top:8,bottom:4,right:8}},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:32,bottom:4,left:4,right:4}},
       plugins:{
         legend:{display:true,position:'top',
           labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:14}},
         tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,
           bodyColor:'#fff',titleColor:C.turquesa,
-          callbacks:{label:ctx=>ctx.datasetIndex===0?' '+fmt(ctx.parsed.x):' '+ctx.parsed.x.toLocaleString('es-EC')+' svc'}}
+          callbacks:{
+            label:ctx=>ctx.datasetIndex===0
+              ?' Facturación: '+fmt(ctx.parsed.y)
+              :'  Servicios: '+ctx.parsed.y.toLocaleString('es-EC')+' svc'
+          }
+        },
+        // etiquetas encima de cada barra
+        valueLabels:{
+          afterDatasetsDraw(chart){
+            const{ctx,scales:{yFact,ySvc}}=chart;
+            chart.data.datasets.forEach((ds,di)=>{
+              const meta=chart.getDatasetMeta(di);
+              if(meta.hidden) return;
+              meta.data.forEach((el,i)=>{
+                const val=ds.data[i]; if(!val||val<=0) return;
+                const isBar=di===0;
+                const label=isBar?fmtk(val):val.toLocaleString('es-EC');
+                ctx.save();
+                ctx.font=isBar?'700 10px Barlow,sans-serif':'600 9px Barlow,sans-serif';
+                ctx.fillStyle=isBar?'#fff':C.azulC2;
+                ctx.textAlign='center';ctx.textBaseline='bottom';
+                ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=4;
+                ctx.fillText(label,el.x,el.y-4);
+                ctx.restore();
+              });
+            });
+          }
+        }
       },
       scales:{
-        xFact:{position:'bottom',ticks:{color:'#9BBCD8',font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'},
+        yFact:{position:'left',
+          ticks:{color:'#9BBCD8',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},
           grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'},
-          title:{display:true,text:'Facturación',color:'#9BBCD8',font:{size:9}}},
-        xSvc:{position:'top',ticks:{color:C.azulC2,font:{size:10},callback:v=>v.toLocaleString('es-EC')},
+          title:{display:true,text:'Facturación ($)',color:'#9BBCD8',font:{size:9}}},
+        ySvc:{position:'right',
+          ticks:{color:C.azulC2,font:{size:9},callback:v=>v.toLocaleString('es-EC')},
           grid:{display:false},border:{color:'rgba(255,255,255,0.08)'},
-          title:{display:true,text:'Servicios',color:C.azulC2,font:{size:9}}},
-        y:{ticks:{color:'#fff',font:{size:12,family:'Barlow Condensed'},padding:6},
+          title:{display:true,text:'N° Servicios',color:C.azulC2,font:{size:9}}},
+        x:{ticks:{color:'#fff',font:{size:11,family:'Barlow Condensed'},maxRotation:0},
           grid:{display:false},border:{display:false}}
       }
     }
