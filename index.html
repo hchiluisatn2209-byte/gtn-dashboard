@@ -253,7 +253,16 @@
   <!-- 3. FACTURACIÓN POR TERCERIZADORA (misma altura que fila de donuts) -->
   <div class="card" style="margin-bottom:16px;height:220px;display:flex;flex-direction:column;overflow:hidden;">
     <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
-    <canvas id="hbarChart" style="flex:1;min-height:0;width:100%!important;"></canvas>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0;">
+      <div style="display:flex;flex-direction:column;min-height:0;">
+        <div style="font-size:9px;color:var(--turquesa);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Facturación ($)</div>
+        <canvas id="hbarChart" style="flex:1;min-height:0;width:100%!important;"></canvas>
+      </div>
+      <div style="display:flex;flex-direction:column;min-height:0;">
+        <div style="font-size:9px;color:var(--azul-c2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">N° Servicios</div>
+        <canvas id="svcChart" style="flex:1;min-height:0;width:100%!important;"></canvas>
+      </div>
+    </div>
   </div>
 
   <!-- 4. TENDENCIA DE FACTURACIÓN (ancho completo) -->
@@ -769,85 +778,84 @@ function buildTipo(){
     [C.turquesa,C.magenta,C.naranja,'#38BDF8',C.morado]);
 }
 
-// ─── HBAR (vertical: barras facturación + línea servicios) ───
-let hbarChart;
-// Plugin etiquetas para hbarChart
-const hbarLabelsPlugin={id:'hbarLabels',afterDatasetsDraw(chart){
-  const{ctx,scales}=chart;
-  if(!scales.yFact) return;
-  chart.data.datasets.forEach((ds,di)=>{
-    const meta=chart.getDatasetMeta(di);
-    if(meta.hidden) return;
-    meta.data.forEach((el,i)=>{
-      const val=ds.data[i]; if(!val||val<=0) return;
-      const isBar=di===0;
-      const label=isBar?fmtk(val):val.toLocaleString('es-EC')+' svc';
-      ctx.save();
-      ctx.font=isBar?'700 10px Barlow,sans-serif':'600 9px Barlow,sans-serif';
-      ctx.fillStyle=isBar?'#fff':C.azulC2;
-      ctx.textAlign='center';ctx.textBaseline='bottom';
-      ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=4;
-      ctx.fillText(label,el.x,el.y-4);
-      ctx.restore();
-    });
-  });
-}};
-Chart.register(hbarLabelsPlugin);
+// ─── HBAR — dos gráficos lado a lado ───
+let hbarChart, svcChart;
 
 function buildHbar(){
   if(hbarChart) hbarChart.destroy();
-  const ctx=document.getElementById('hbarChart').getContext('2d');
-  const items=[];
+  if(svcChart)  svcChart.destroy();
+
   const miH=activeMesAbsIdx;
+  const items=[];
   ALL_TERCS.forEach(t=>{
     const fv=FACT_MES[t]?FACT_MES[t][miH]:0;
     const sv=SVC_MES[t]?SVC_MES[t][miH]:0;
     if(activeTerc.has(t)&&fv>0) items.push({t,fv,sv,col:TERC_COLORS[t]});
   });
   items.sort((a,b)=>b.fv-a.fv);
-  const labels=items.map(i=>i.t);
-  const dataFact=items.map(i=>i.fv);
-  const dataSvc=items.map(i=>i.sv);
-  const colors=items.map(i=>i.col);
-  const colorsSvc=items.map(i=>i.col+'88');
-  hbarChart=new Chart(ctx,{
+
+  const labels  = items.map(i=>i.t);
+  const dataFact= items.map(i=>i.fv);
+  const dataSvc = items.map(i=>i.sv);
+  const colors  = items.map(i=>i.col);
+
+  const sharedOpts = {
+    responsive:true, maintainAspectRatio:false,
+    layout:{padding:{top:24,bottom:2,left:2,right:2}},
+    plugins:{
+      legend:{display:false},
+      tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,
+        bodyColor:'#fff',titleColor:C.turquesa}
+    },
+    scales:{
+      x:{ticks:{color:'#fff',font:{size:10,family:'Barlow Condensed'},maxRotation:0},
+         grid:{display:false},border:{display:false}},
+      y:{ticks:{color:'#9BBCD8',font:{size:8}},
+         grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'}}
+    }
+  };
+
+  // ── Gráfico Facturación ──
+  const ctxF = document.getElementById('hbarChart').getContext('2d');
+  hbarChart = new Chart(ctxF,{
     type:'bar',
-    data:{labels,datasets:[
-      {label:'Facturación ($)',data:dataFact,
-       backgroundColor:colors,borderRadius:4,borderWidth:0,
-       yAxisID:'yFact',barPercentage:0.4,categoryPercentage:0.8},
-      {label:'N° Servicios',data:dataSvc,
-       backgroundColor:colorsSvc,borderColor:colors,borderWidth:1.5,
-       borderRadius:4,
-       yAxisID:'ySvc',barPercentage:0.4,categoryPercentage:0.8},
-    ]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      layout:{padding:{top:28,bottom:4,left:4,right:4}},
-      plugins:{
-        legend:{display:true,position:'top',
-          labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:14}},
-        tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,
-          bodyColor:'#fff',titleColor:C.turquesa,mode:'index',intersect:false,
-          callbacks:{
-            label:ctx=>ctx.datasetIndex===0
-              ?' Facturación: '+fmt(ctx.parsed.y)
-              :'  Servicios: '+ctx.parsed.y.toLocaleString('es-EC')+' svc'
-          }
-        }
-      },
-      scales:{
-        yFact:{position:'left',
-          ticks:{color:'#9BBCD8',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},
-          grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'},
-          title:{display:true,text:'Facturación ($)',color:'#9BBCD8',font:{size:9}}},
-        ySvc:{position:'right',
-          ticks:{color:C.azulC2,font:{size:9},callback:v=>v.toLocaleString('es-EC')},
-          grid:{display:false},border:{color:'rgba(255,255,255,0.08)'},
-          title:{display:true,text:'N° Servicios',color:C.azulC2,font:{size:9}}},
-        x:{ticks:{color:'#fff',font:{size:11,family:'Barlow Condensed'},maxRotation:0},
-          grid:{display:false},border:{display:false}}
-      }
+    data:{labels, datasets:[{
+      data:dataFact, backgroundColor:colors,
+      borderRadius:5, borderWidth:0,
+      barPercentage:0.7, categoryPercentage:0.8
+    }]},
+    options:{...sharedOpts,
+      showValueLabels:true, labelFormatter:v=>fmtk(v),
+      plugins:{...sharedOpts.plugins,
+        tooltip:{...sharedOpts.plugins.tooltip,
+          callbacks:{label:ctx=>' '+fmt(ctx.parsed.y)}}},
+      scales:{...sharedOpts.scales,
+        y:{...sharedOpts.scales.y,
+          ticks:{...sharedOpts.scales.y.ticks,
+            callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}
+    }
+  });
+
+  // ── Gráfico Servicios ──
+  const ctxS = document.getElementById('svcChart').getContext('2d');
+  svcChart = new Chart(ctxS,{
+    type:'bar',
+    data:{labels, datasets:[{
+      data:dataSvc,
+      backgroundColor:colors.map(c=>c+'99'),
+      borderColor:colors, borderWidth:1.5,
+      borderRadius:5,
+      barPercentage:0.7, categoryPercentage:0.8
+    }]},
+    options:{...sharedOpts,
+      showValueLabels:true, labelFormatter:v=>v.toLocaleString('es-EC'),
+      plugins:{...sharedOpts.plugins,
+        tooltip:{...sharedOpts.plugins.tooltip,
+          callbacks:{label:ctx=>' '+ctx.parsed.y.toLocaleString('es-EC')+' svc'}}},
+      scales:{...sharedOpts.scales,
+        y:{...sharedOpts.scales.y,
+          ticks:{...sharedOpts.scales.y.ticks,
+            callback:v=>v.toLocaleString('es-EC')}}}
     }
   });
 }
@@ -1010,6 +1018,7 @@ function syncTrendHeight(){
   if(!left||!right) return;
   right.style.height=left.offsetHeight+'px';
   if(hbarChart) hbarChart.resize();
+  if(svcChart)  svcChart.resize();
 }
 function applyFilters(){
   buildTrend();buildHbar();buildBarList();buildTipo();
