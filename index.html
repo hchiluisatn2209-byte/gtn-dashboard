@@ -158,6 +158,15 @@
   <span class="filter-label">Tercerizadora</span>
   <div class="filter-group" id="filterTerc"></div>
   <div class="filter-divider"></div>
+  <span class="filter-label">Enlace</span>
+  <div class="filter-group" id="filterEnlace"></div>
+  <div class="filter-divider"></div>
+  <span class="filter-label">Cliente</span>
+  <div class="filter-group" id="filterCliente"></div>
+  <div class="filter-divider"></div>
+  <span class="filter-label">Servicio</span>
+  <div class="filter-group" id="filterServicio"></div>
+  <div class="filter-divider"></div>
   <div class="mes-select-wrap">
     <span class="filter-label" style="font-size:9px">Corte</span>
     <select class="mes-select" id="mesSelect"></select>
@@ -240,7 +249,7 @@
     </div>
   </div>
 
-  <!-- 3. TENDENCIA + DETALLE DE FACTURACIÓN (misma altura) -->
+  <!-- 3. TENDENCIA + FACTURACIÓN (misma altura) -->
   <div class="section-title">Tendencia de Facturación · Últimos 13 Meses</div>
   <div class="grid-trend-fact">
     <div class="card">
@@ -279,9 +288,16 @@
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
-      <canvas id="hbarChart" height="240"></canvas>
+    <!-- Columna derecha: hbar + factTipos apilados -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
+        <canvas id="hbarChart" height="200"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>Facturación por Tipo de Enlace y Cliente ($)</div>
+        <canvas id="factTiposChart" height="180"></canvas>
+      </div>
     </div>
   </div>
 
@@ -302,10 +318,7 @@
       <div class="card-title"><span class="dot"></span>Detalle de Servicio – N° Servicios</div>
       <canvas id="detalleChart" height="180"></canvas>
     </div>
-    <div class="card">
-      <div class="card-title"><span class="dot"></span>Facturación por Tipo de Enlace y Tipo de Cliente ($)</div>
-      <canvas id="factTiposChart" height="180"></canvas>
-    </div>
+    <div class="card" style="visibility:hidden"></div>
   </div>
 
 </main>
@@ -423,6 +436,16 @@ ALL_TERCS.forEach(t=>{D[t].fact=D[t].factA+D[t].factCT;});
 // ═══ FILTRO ═══
 let activeTerc=new Set(ALL_TERCS);
 let activeMesIdx=12; // Abr-26 por defecto (índice 12)
+const ALL_ENLACES=['PRINCIPAL','BACKUP','INFRAESTRUCTURA'];
+const ALL_CLIENTES_TIPO=['CORPORATIVO','BANCA'];
+const ALL_SERVICIOS_TIPO=['ULTIMA_MILLA','FIBRA_OSCURA','ULTIMA_MILLA_MIXTA','CAPACIDAD'];
+const ENLACE_COLORS={PRINCIPAL:C.turquesa,BACKUP:C.amarillo,INFRAESTRUCTURA:C.morado};
+const CLIENTE_COLORS={CORPORATIVO:C.magenta,BANCA:C.azulC};
+const SERVICIO_COLORS={ULTIMA_MILLA:C.turquesa,FIBRA_OSCURA:C.magenta,ULTIMA_MILLA_MIXTA:C.naranja,CAPACIDAD:'#38BDF8'};
+const SERVICIO_LABELS={ULTIMA_MILLA:'Últ. Milla',FIBRA_OSCURA:'Fibra Osc.',ULTIMA_MILLA_MIXTA:'Mixta',CAPACIDAD:'Capacidad'};
+let activeEnlace=new Set(ALL_ENLACES);
+let activeClienteTipo=new Set(ALL_CLIENTES_TIPO);
+let activeServicioTipo=new Set(ALL_SERVICIOS_TIPO);
 const fmt=v=>'$'+v.toLocaleString('es-EC',{minimumFractionDigits:2});
 const fmtk=v=>'$'+(v/1000).toFixed(1)+'k';
 
@@ -487,18 +510,26 @@ function aggFact(){
 }
 function aggEnlace(){
   const r={PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}};
-  [...activeTerc].forEach(t=>{['PRINCIPAL','BACKUP','INFRAESTRUCTURA'].forEach(k=>{r[k].svc+=D[t].enlace[k].svc;r[k].fact+=D[t].enlace[k].fact;});});
+  [...activeTerc].forEach(t=>{
+    ALL_ENLACES.filter(k=>activeEnlace.has(k)).forEach(k=>{
+      r[k].svc+=D[t].enlace[k].svc; r[k].fact+=D[t].enlace[k].fact;
+    });
+  });
   return r;
 }
 function aggCliente(){
   const r={CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}};
-  [...activeTerc].forEach(t=>{['CORPORATIVO','BANCA'].forEach(k=>{r[k].svc+=D[t].cliente[k].svc;r[k].fact+=D[t].cliente[k].fact;});});
+  [...activeTerc].forEach(t=>{
+    ALL_CLIENTES_TIPO.filter(k=>activeClienteTipo.has(k)).forEach(k=>{
+      r[k].svc+=D[t].cliente[k].svc; r[k].fact+=D[t].cliente[k].fact;
+    });
+  });
   return r;
 }
 function aggTipo(){
   const r={ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0};
   [...activeTerc].forEach(t=>{
-    Object.keys(r).forEach(k=>{ r[k]+=(D[t].tipo[k]||0); });
+    ALL_SERVICIOS_TIPO.filter(k=>activeServicioTipo.has(k)).forEach(k=>{ r[k]+=(D[t].tipo[k]||0); });
   });
   return r;
 }
@@ -881,43 +912,57 @@ function updateKPIs(){
 function applyFilters(){
   buildTrend();buildHbar();buildBarList();buildTipo();
   buildEnlace();buildCliente();buildFactTipos();buildDetalle();buildClientes();updateKPIs();
-  const all=activeTerc.size===ALL_TERCS.length;
+  const allT=activeTerc.size===ALL_TERCS.length;
+  const allE=activeEnlace.size===ALL_ENLACES.length;
+  const allC=activeClienteTipo.size===ALL_CLIENTES_TIPO.length;
+  const allS=activeServicioTipo.size===ALL_SERVICIOS_TIPO.length;
+  const parts=[];
+  if(!allT) parts.push([...activeTerc].join(', '));
+  if(!allE) parts.push('Enlace: '+[...activeEnlace].join(', '));
+  if(!allC) parts.push('Cliente: '+[...activeClienteTipo].join(', '));
+  if(!allS) parts.push('Serv: '+[...activeServicioTipo].map(k=>SERVICIO_LABELS[k]).join(', '));
   const mesLabel=ALL_MESES[activeMesAbsIdx];
   document.getElementById('filterInfo').textContent=
-    (all?'Todas':''+[...activeTerc].join(', '))+' · Corte: '+mesLabel;
+    (parts.length?parts.join(' · '):'Todas')+' · Corte: '+mesLabel;
 }
 
 // ─── CHIPS ───
-function buildChips(){
-  // Chips de tercerizadoras
-  ALL_TERCS.forEach(t=>{
+function makeChips(containerId, items, activeSet, colorMap, labelMap){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML='';
+  items.forEach(key=>{
     const chip=document.createElement('span');
-    chip.className='chip active';chip.style.setProperty('--chip-col',TERC_COLORS[t]);
-    chip.innerHTML=`<span class="dot-chip"></span>${t}`;
+    const col=colorMap[key]||C.muted;
+    const label=labelMap?labelMap[key]:key;
+    chip.className='chip active';
+    chip.style.setProperty('--chip-col',col);
+    chip.innerHTML=`<span class="dot-chip"></span>${label}`;
     chip.addEventListener('click',()=>{
-      if(activeTerc.has(t)){if(activeTerc.size>1) activeTerc.delete(t);}
-      else activeTerc.add(t);
-      chip.classList.toggle('active',activeTerc.has(t));
+      if(activeSet.has(key)){if(activeSet.size>1) activeSet.delete(key);}
+      else activeSet.add(key);
+      chip.classList.toggle('active',activeSet.has(key));
       applyFilters();
     });
-    document.getElementById('filterTerc').appendChild(chip);
+    el.appendChild(chip);
   });
-  // Selector de mes
+}
+function buildChips(){
+  makeChips('filterTerc', ALL_TERCS, activeTerc, TERC_COLORS, null);
+  makeChips('filterEnlace', ALL_ENLACES, activeEnlace, ENLACE_COLORS, {PRINCIPAL:'Principal',BACKUP:'Backup',INFRAESTRUCTURA:'Infraestructura'});
+  makeChips('filterCliente', ALL_CLIENTES_TIPO, activeClienteTipo, CLIENTE_COLORS, {CORPORATIVO:'Corporativo',BANCA:'Banca'});
+  makeChips('filterServicio', ALL_SERVICIOS_TIPO, activeServicioTipo, SERVICIO_COLORS, SERVICIO_LABELS);
+
   const sel=document.getElementById('mesSelect');
-  // El selector se puebla en initDashboard después de cargar datos
-  // Solo registrar el evento de cambio
-  if(sel.options.length>0){
-    // Ya fue poblado (recarga)
-  }
-  sel.addEventListener('change',()=>{
-    activeMesAbsIdx=parseInt(sel.value);
-    applyFilters();
-  });
-  // Reset
+  sel.addEventListener('change',()=>{ activeMesAbsIdx=parseInt(sel.value); applyFilters(); });
+
   document.getElementById('resetBtn').addEventListener('click',()=>{
     activeTerc=new Set(ALL_TERCS);
+    activeEnlace=new Set(ALL_ENLACES);
+    activeClienteTipo=new Set(ALL_CLIENTES_TIPO);
+    activeServicioTipo=new Set(ALL_SERVICIOS_TIPO);
     activeMesAbsIdx=parseInt(document.getElementById('mesSelect').value)||24;
-    document.querySelectorAll('#filterTerc .chip').forEach(c=>c.classList.add('active'));
+    document.querySelectorAll('.filter-group .chip').forEach(c=>c.classList.add('active'));
     applyFilters();
   });
 }
