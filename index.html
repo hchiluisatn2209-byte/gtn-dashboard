@@ -782,6 +782,33 @@ function buildTipo(){
 
 // ─── HBAR ───
 let hbarChart;
+const dualLabelsPlugin={id:'dualLabels',afterDatasetsDraw(chart){
+  const{ctx,scales}=chart;
+  const xFact=scales['xFact'], xSvc=scales['xSvc'];
+  if(!xFact||!xSvc) return;
+  chart.data.datasets.forEach((ds,di)=>{
+    const meta=chart.getDatasetMeta(di);
+    if(meta.hidden) return;
+    meta.data.forEach((bar,i)=>{
+      const val=ds.data[i]; if(!val||val<=0) return;
+      const isFactDs=di===0;
+      const label=isFactDs?fmt(val):val.toLocaleString('es-EC')+' svc';
+      const xScale=isFactDs?xFact:xSvc;
+      const bx=xScale.getPixelForValue(val);
+      const avail=bx-xFact.left;
+      ctx.save();
+      ctx.font=isFactDs?'600 11px Barlow,sans-serif':'500 10px Barlow,sans-serif';
+      ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=3;
+      const tw=ctx.measureText(label).width;
+      if(avail>tw+20){ctx.textAlign='right';ctx.fillStyle='#fff';ctx.fillText(label,bx-6,bar.y);}
+      else{ctx.textAlign='left';ctx.fillStyle='#fff';ctx.fillText(label,bx+6,bar.y);}
+      ctx.restore();
+    });
+  });
+}};
+Chart.register(dualLabelsPlugin);
+
 function buildHbar(){
   if(hbarChart) hbarChart.destroy();
   const ctx=document.getElementById('hbarChart').getContext('2d');
@@ -797,31 +824,6 @@ function buildHbar(){
       colors.push(TERC_COLORS[t]);
     }
   });
-  // Plugin etiquetas dual
-  const dualLabelPlugin={id:'dualLabels',afterDatasetsDraw(chart){
-    const{ctx,scales:{xFact,xSvc}}=chart;
-    if(!xFact||!xSvc) return;
-    chart.data.datasets.forEach((ds,di)=>{
-      const meta=chart.getDatasetMeta(di);
-      if(meta.hidden) return;
-      meta.data.forEach((bar,i)=>{
-        const val=ds.data[i]; if(!val||val<=0) return;
-        const isFactDs=di===0;
-        const label=isFactDs?fmt(val):val.toLocaleString('es-EC')+' svc';
-        const xScale=isFactDs?xFact:xSvc;
-        const bx=xScale.getPixelForValue(val);
-        const avail=bx-(isFactDs?xFact.left:xSvc.left);
-        ctx.save();
-        ctx.font=isFactDs?'600 11px Barlow,sans-serif':'500 10px Barlow,sans-serif';
-        ctx.textBaseline='middle';
-        ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=3;
-        const tw=ctx.measureText(label).width;
-        if(avail>tw+20){ctx.textAlign='right';ctx.fillStyle='#fff';ctx.fillText(label,bx-6,bar.y);}
-        else{ctx.textAlign='left';ctx.fillStyle='#fff';ctx.fillText(label,bx+6,bar.y);}
-        ctx.restore();
-      });
-    });
-  }};
   hbarChart=new Chart(ctx,{type:'bar',
     data:{labels,datasets:[
       {label:'Facturación ($)',data:dataFact,backgroundColor:colors,
@@ -834,7 +836,6 @@ function buildHbar(){
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
       layout:{padding:{top:8,bottom:4,right:8}},
       plugins:{
-        dualLabels,
         legend:{display:true,position:'top',
           labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:14}},
         tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,
@@ -843,9 +844,11 @@ function buildHbar(){
       },
       scales:{
         xFact:{position:'bottom',ticks:{color:'#9BBCD8',font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'},
-          grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Facturación',color:'#9BBCD8',font:{size:9}}},
+          grid:{color:'rgba(255,255,255,0.05)'},border:{color:'rgba(255,255,255,0.08)'},
+          title:{display:true,text:'Facturación',color:'#9BBCD8',font:{size:9}}},
         xSvc:{position:'top',ticks:{color:C.azulC2,font:{size:10},callback:v=>v.toLocaleString('es-EC')},
-          grid:{display:false},border:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Servicios',color:C.azulC2,font:{size:9}}},
+          grid:{display:false},border:{color:'rgba(255,255,255,0.08)'},
+          title:{display:true,text:'Servicios',color:C.azulC2,font:{size:9}}},
         y:{ticks:{color:'#fff',font:{size:12,family:'Barlow Condensed'},padding:6},
           grid:{display:false},border:{display:false}}
       }
