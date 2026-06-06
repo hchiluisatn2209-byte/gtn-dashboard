@@ -769,23 +769,47 @@ function buildTipo(){
     [C.turquesa,C.magenta,C.naranja,'#38BDF8',C.morado]);
 }
 
-// ─── HBAR (ahora vertical: barras de facturación + línea de servicios) ───
+// ─── HBAR (vertical: barras facturación + línea servicios) ───
 let hbarChart;
+// Plugin etiquetas para hbarChart
+const hbarLabelsPlugin={id:'hbarLabels',afterDatasetsDraw(chart){
+  const{ctx,scales}=chart;
+  if(!scales.yFact) return;
+  chart.data.datasets.forEach((ds,di)=>{
+    const meta=chart.getDatasetMeta(di);
+    if(meta.hidden) return;
+    meta.data.forEach((el,i)=>{
+      const val=ds.data[i]; if(!val||val<=0) return;
+      const isBar=di===0;
+      const label=isBar?fmtk(val):val.toLocaleString('es-EC')+' svc';
+      ctx.save();
+      ctx.font=isBar?'700 10px Barlow,sans-serif':'600 9px Barlow,sans-serif';
+      ctx.fillStyle=isBar?'#fff':C.azulC2;
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=4;
+      ctx.fillText(label,el.x,el.y-4);
+      ctx.restore();
+    });
+  });
+}};
+Chart.register(hbarLabelsPlugin);
+
 function buildHbar(){
   if(hbarChart) hbarChart.destroy();
   const ctx=document.getElementById('hbarChart').getContext('2d');
-  const labels=[],dataFact=[],dataSvc=[],colors=[];
+  const items=[];
   const miH=activeMesAbsIdx;
   ALL_TERCS.forEach(t=>{
     const fv=FACT_MES[t]?FACT_MES[t][miH]:0;
     const sv=SVC_MES[t]?SVC_MES[t][miH]:0;
-    if(activeTerc.has(t)&&fv>0){
-      labels.push(t);
-      dataFact.push(fv);
-      dataSvc.push(sv);
-      colors.push(TERC_COLORS[t]);
-    }
+    if(activeTerc.has(t)&&fv>0) items.push({t,fv,sv,col:TERC_COLORS[t]});
   });
+  // Ordenar de mayor a menor por facturación
+  items.sort((a,b)=>b.fv-a.fv);
+  const labels=items.map(i=>i.t);
+  const dataFact=items.map(i=>i.fv);
+  const dataSvc=items.map(i=>i.sv);
+  const colors=items.map(i=>i.col);
   hbarChart=new Chart(ctx,{
     type:'bar',
     data:{labels,datasets:[
@@ -801,6 +825,7 @@ function buildHbar(){
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:26,bottom:4,left:4,right:4}},
       plugins:{
         legend:{display:true,position:'top',
           labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:14}},
@@ -810,28 +835,6 @@ function buildHbar(){
             label:ctx=>ctx.datasetIndex===0
               ?' Facturación: '+fmt(ctx.parsed.y)
               :'  Servicios: '+ctx.parsed.y.toLocaleString('es-EC')+' svc'
-          }
-        },
-        // etiquetas encima de cada barra
-        valueLabels:{
-          afterDatasetsDraw(chart){
-            const{ctx,scales:{yFact,ySvc}}=chart;
-            chart.data.datasets.forEach((ds,di)=>{
-              const meta=chart.getDatasetMeta(di);
-              if(meta.hidden) return;
-              meta.data.forEach((el,i)=>{
-                const val=ds.data[i]; if(!val||val<=0) return;
-                const isBar=di===0;
-                const label=isBar?fmtk(val):val.toLocaleString('es-EC');
-                ctx.save();
-                ctx.font=isBar?'700 10px Barlow,sans-serif':'600 9px Barlow,sans-serif';
-                ctx.fillStyle=isBar?'#fff':C.azulC2;
-                ctx.textAlign='center';ctx.textBaseline='bottom';
-                ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=4;
-                ctx.fillText(label,el.x,el.y-4);
-                ctx.restore();
-              });
-            });
           }
         }
       },
