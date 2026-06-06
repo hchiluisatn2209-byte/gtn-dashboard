@@ -78,11 +78,9 @@
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px}
   .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:22px}
   .grid-trend{display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:22px}
-  .grid-trend-fact{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:22px;align-items:start}
-  .trend-right-col{display:flex;flex-direction:column;gap:16px;}
-  .trend-right-col .card{display:flex;flex-direction:column;overflow:hidden;}
-  .trend-right-col .card.hbar-card{height:380px;}
-  .trend-right-col .card.fact-tipos-card{height:300px;}
+  .grid-trend-fact{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:22px;align-items:stretch}
+  .trend-right-col{display:flex;flex-direction:column;}
+  .trend-right-col .card.hbar-card{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
   .trend-right-col .card canvas{flex:1;min-height:0;max-height:100%;width:100%!important;}
   .card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:22px;overflow:hidden;animation:fadeUp .5s ease both;animation-delay:.25s}
   .card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
@@ -291,10 +289,6 @@
       <div class="card hbar-card">
         <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
         <canvas id="hbarChart"></canvas>
-      </div>
-      <div class="card fact-tipos-card">
-        <div class="card-title"><span class="dot"></span>Facturación por Tipo de Enlace y Cliente ($)</div>
-        <canvas id="factTiposChart"></canvas>
       </div>
     </div>
   </div>
@@ -802,7 +796,7 @@ function buildHbar(){
     data:{labels,datasets:[
       {type:'bar',label:'Facturación ($)',data:dataFact,
        backgroundColor:colors,borderRadius:6,borderWidth:0,
-       yAxisID:'yFact',order:2,barPercentage:0.6,categoryPercentage:0.75},
+       yAxisID:'yFact',order:2,barPercentage:0.85,categoryPercentage:0.9},
       {type:'line',label:'N° Servicios',data:dataSvc,
        borderColor:C.azulC2,backgroundColor:'rgba(100,180,245,0.15)',
        pointBackgroundColor:colors,pointBorderColor:'#fff',
@@ -1017,7 +1011,7 @@ function updateKPIs(){
 // ─── APPLY ALL ───
 function applyFilters(){
   buildTrend();buildHbar();buildBarList();buildTipo();
-  buildEnlace();buildCliente();buildFactTipos();buildDetalle();buildClientes();updateKPIs();
+  buildEnlace();buildCliente();buildDetalle();buildClientes();updateKPIs();
   const allT=activeTerc.size===ALL_TERCS.length;
   const allE=activeEnlace.size===ALL_ENLACES.length;
   const allC=activeClienteTipo.size===ALL_CLIENTES_TIPO.length;
