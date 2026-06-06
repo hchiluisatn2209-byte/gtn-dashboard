@@ -904,7 +904,8 @@ function buildChips(){
     applyFilters();
   });
   // Reset
-  document.getElementById('resetBtn').addEventListener('click',()=>{\n    activeTerc=new Set(ALL_TERCS);
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    activeTerc=new Set(ALL_TERCS);
     activeMesAbsIdx=parseInt(document.getElementById('mesSelect').value)||24;
     document.querySelectorAll('#filterTerc .chip').forEach(c=>c.classList.add('active'));
     applyFilters();
