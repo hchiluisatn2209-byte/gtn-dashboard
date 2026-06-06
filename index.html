@@ -496,19 +496,47 @@ Object.assign(FACT_CT_MES,{
 });
 function aggFact(){
   const mi=activeMesAbsIdx;
+  const allFilters = activeEnlace.size===ALL_ENLACES.length &&
+                     activeClienteTipo.size===ALL_CLIENTES_TIPO.length &&
+                     activeServicioTipo.size===ALL_SERVICIOS_TIPO.length;
+
+  // Si no hay subfiltros activos, usar matrices históricas (más rápido y preciso)
+  if(allFilters){
+    let factA=0,factCT=0,svc=0,cli=0;
+    [...activeTerc].forEach(t=>{
+      const fct   = (FACT_CT_MES[t]&&FACT_CT_MES[t][mi]!=null)?(FACT_CT_MES[t][mi]||0):0;
+      const ftotal= (FACT_MES[t]   &&FACT_MES[t][mi]!=null)   ?(FACT_MES[t][mi]||0):0;
+      const svcV  = (SVC_MES[t]   &&SVC_MES[t][mi]!=null)    ?(SVC_MES[t][mi]||0):0;
+      const cliV  = (CLI_MES[t]   &&CLI_MES[t][mi]!=null)    ?(CLI_MES[t][mi]||0):0;
+      factA+=ftotal-fct; factCT+=fct; svc+=svcV; cli+=cliV;
+    });
+    return{factA:isNaN(factA)?0:factA,factCT:isNaN(factCT)?0:factCT,
+           fact:isNaN(factA+factCT)?0:factA+factCT,svc,cli};
+  }
+
+  // Con subfiltros: usar D{} que tiene desglose por enlace/cliente/tipo
   let factA=0,factCT=0,svc=0,cli=0;
   [...activeTerc].forEach(t=>{
-    const fct  = (FACT_CT_MES[t] && FACT_CT_MES[t][mi]!=null) ? (FACT_CT_MES[t][mi]||0) : 0;
-    const ftotal= (FACT_MES[t]   && FACT_MES[t][mi]!=null)    ? (FACT_MES[t][mi]||0)    : 0;
-    const svcV  = (SVC_MES[t]    && SVC_MES[t][mi]!=null)     ? (SVC_MES[t][mi]||0)     : 0;
-    const cliV  = (CLI_MES[t]    && CLI_MES[t][mi]!=null)     ? (CLI_MES[t][mi]||0)     : 0;
-    factA  += (ftotal - fct);
-    factCT += fct;
-    svc    += svcV;
-    cli    += cliV;
+    const d=D[t]; if(!d) return;
+    // Facturación filtrada por enlace
+    [...activeEnlace].forEach(k=>{ factA+=d.enlace[k]?d.enlace[k].fact:0; });
+    // Servicios filtrados por enlace
+    [...activeEnlace].forEach(k=>{ svc+=d.enlace[k]?d.enlace[k].svc:0; });
+    // Clientes filtrados por tipo
+    const cliSet=new Set();
+    [...activeClienteTipo].forEach(k=>{ if(d.cliente[k]) cliSet.add(k); });
+    // Aproximar clientes como proporción del total
+    const totalSvcD=ALL_ENLACES.reduce((s,k)=>s+(d.enlace[k]?d.enlace[k].svc:0),0);
+    const filtSvcD=[...activeEnlace].reduce((s,k)=>s+(d.enlace[k]?d.enlace[k].svc:0),0);
+    const ratio=totalSvcD>0?filtSvcD/totalSvcD:0;
+    cli+=Math.round((d.cli||0)*ratio);
   });
-  return{factA:isNaN(factA)?0:factA, factCT:isNaN(factCT)?0:factCT,
-         fact:isNaN(factA+factCT)?0:factA+factCT, svc, cli};
+  factCT=[...activeTerc].reduce((s,t)=>{
+    const fct=(FACT_CT_MES[t]&&FACT_CT_MES[t][mi]!=null)?(FACT_CT_MES[t][mi]||0):0;
+    return s+fct;
+  },0);
+  return{factA:isNaN(factA)?0:factA,factCT:isNaN(factCT)?0:factCT,
+         fact:isNaN(factA+factCT)?0:factA+factCT,svc,cli};
 }
 function aggEnlace(){
   const r={PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}};
@@ -879,10 +907,20 @@ function updateKPIs(){
   document.getElementById('kpiSvc').textContent=d.svc.toLocaleString('es-EC');
   document.getElementById('kpiClients').textContent=d.cli.toLocaleString('es-EC');
   const mesL=ALL_MESES[activeMesAbsIdx];
-  const subS=document.getElementById('kpiSvcSub');if(subS) subS.textContent='Activos + Cancelado en Telcos · '+mesL;
+  const subS=document.getElementById('kpiSvcSub');
+  const allFilters=activeEnlace.size===ALL_ENLACES.length&&activeClienteTipo.size===ALL_CLIENTES_TIPO.length&&activeServicioTipo.size===ALL_SERVICIOS_TIPO.length;
+  if(subS) subS.textContent=(allFilters?'Activos + Cancelado en Telcos':'Filtrado')+' · '+mesL;
   const subC=document.getElementById('kpiClientsSub');if(subC) subC.textContent='Clientes activos · '+mesL;
   const miK=activeMesAbsIdx;
-  const actConFact=[...activeTerc].filter(t=>(FACT_MES[t]?FACT_MES[t][miK]:0)>0);
+  // Tercerizadoras activas: solo las que tienen facturación en el corte y están en activeTerc
+  const actConFact=[...activeTerc].filter(t=>{
+    if(!(FACT_MES[t]?FACT_MES[t][miK]:0)>0) return false;
+    if(allFilters) return true;
+    // con subfiltros: verificar si tiene datos en los filtros activos
+    const d=D[t];
+    const hasFact=[...activeEnlace].some(k=>d.enlace[k]&&d.enlace[k].fact>0);
+    return hasFact;
+  });
   document.getElementById('kpiTerc').textContent=actConFact.length;
   document.getElementById('kpiTercSub').textContent='Con facturación '+ALL_MESES[miK];
   // estados panel
@@ -890,12 +928,9 @@ function updateKPIs(){
   const elSA=document.getElementById('teSvcActivo'),elSCT=document.getElementById('teSvcCT');
   if(elTA) elTA.textContent=fmt(d.factA);
   if(elTCT) elTCT.textContent=fmt(d.factCT);
-  const miP=activeMesAbsIdx;
-  const svcAP=[...activeTerc].reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][miP]:0),0);
-  const svcCTP=[...activeTerc].reduce((s,t)=>s+((FACT_CT_MES[t]?FACT_CT_MES[t][miP]:0)>0?1:0),0);
-  if(elSA) elSA.textContent=svcAP+' svc';
-  if(elSCT) elSCT.textContent=svcCTP+' svc';
-  // diferencia
+  if(elSA) elSA.textContent=d.svc+' svc';
+  if(elSCT) elSCT.textContent=d.factCT>0?'1 svc':'0 svc';
+  // diferencia vs mes anterior
   const abrF=_tv.length?_tv[_tv.length-1]:0;
   const marF=_tv.length>1?_tv[_tv.length-2]:abrF;
   const diffF=abrF-marF,diffPct=marF>0?diffF/marF*100:0;
