@@ -804,33 +804,31 @@ function buildHbar(){
     const sv=SVC_MES[t]?SVC_MES[t][miH]:0;
     if(activeTerc.has(t)&&fv>0) items.push({t,fv,sv,col:TERC_COLORS[t]});
   });
-  // Ordenar de mayor a menor por facturación
   items.sort((a,b)=>b.fv-a.fv);
   const labels=items.map(i=>i.t);
   const dataFact=items.map(i=>i.fv);
   const dataSvc=items.map(i=>i.sv);
   const colors=items.map(i=>i.col);
+  const colorsSvc=items.map(i=>i.col+'88');
   hbarChart=new Chart(ctx,{
     type:'bar',
     data:{labels,datasets:[
-      {type:'bar',label:'Facturación ($)',data:dataFact,
-       backgroundColor:colors,borderRadius:6,borderWidth:0,
-       yAxisID:'yFact',order:2,barPercentage:0.85,categoryPercentage:0.9},
-      {type:'line',label:'N° Servicios',data:dataSvc,
-       borderColor:C.azulC2,backgroundColor:'rgba(100,180,245,0.15)',
-       pointBackgroundColor:colors,pointBorderColor:'#fff',
-       pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,
-       borderWidth:2,tension:0.3,fill:false,
-       yAxisID:'ySvc',order:1},
+      {label:'Facturación ($)',data:dataFact,
+       backgroundColor:colors,borderRadius:4,borderWidth:0,
+       yAxisID:'yFact',barPercentage:0.4,categoryPercentage:0.8},
+      {label:'N° Servicios',data:dataSvc,
+       backgroundColor:colorsSvc,borderColor:colors,borderWidth:1.5,
+       borderRadius:4,
+       yAxisID:'ySvc',barPercentage:0.4,categoryPercentage:0.8},
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      layout:{padding:{top:26,bottom:4,left:4,right:4}},
+      layout:{padding:{top:28,bottom:4,left:4,right:4}},
       plugins:{
         legend:{display:true,position:'top',
           labels:{color:'#9BBCD8',font:{size:10},usePointStyle:true,boxHeight:6,padding:14}},
         tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,
-          bodyColor:'#fff',titleColor:C.turquesa,
+          bodyColor:'#fff',titleColor:C.turquesa,mode:'index',intersect:false,
           callbacks:{
             label:ctx=>ctx.datasetIndex===0
               ?' Facturación: '+fmt(ctx.parsed.y)
