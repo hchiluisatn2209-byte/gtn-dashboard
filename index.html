@@ -195,7 +195,7 @@
     </div>
   </div>
 
-  <div class="section-title">Tendencia de Facturación · Abr 2025 – Abr 2026</div>
+  <div class="section-title">Tendencia de Facturación · Últimos 13 Meses</div>
   <div class="grid-trend">
     <div class="card">
       <div class="card-title"><span class="dot"></span>Facturación Mensual</div>
@@ -316,10 +316,10 @@ const ALL_MESES=[
   'Abr-24','May-24','Jun-24','Jul-24','Ago-24','Sep-24','Oct-24','Nov-24','Dic-24',
   'Ene-25','Feb-25','Mar-25',
   'Abr-25','May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25',
-  'Ene-26','Feb-26','Mar-26','Abr-26'
+  'Ene-26','Feb-26','Mar-26','Abr-26','May-26','Jun-26'
 ];
-// Índice del mes actual (Abr-26 = índice 24 en ALL_MESES)
-let activeMesAbsIdx = 24; // Abr-26 por defecto
+// Índice del mes actual (Abr-26 = índice 24, May-26 = 25, Jun-26 = 26)
+let activeMesAbsIdx = 24; // se actualiza dinámicamente al último mes con datos
 const MESES=['Abr-25','May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25','Ene-26','Feb-26','Mar-26','Abr-26'];
 const MI=12; // índice de Abr-26 en el array local de 13 meses
 
@@ -327,7 +327,7 @@ const MI=12; // índice de Abr-26 en el array local de 13 meses
 // FACT_MES — base inicial (últimos 13 = Abr-25→Abr-26 del Excel actualizado)
 // El Google Sheet sobreescribe estos valores al cargar
 const FACT_MES={};
-ALL_TERCS.forEach(t=>{ FACT_MES[t]=new Array(25).fill(0); });
+ALL_TERCS.forEach(t=>{ FACT_MES[t]=new Array(27).fill(0); });
 // Valores base desde TERC_GESTIÓN_FACTURACIÓN_(2).xlsx
 Object.assign(FACT_MES,{
   TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 44682.31,48690.93,43739.91,43739.91,47158.27,45869.01,46210.12,48316.83,55508.47,49475.75,48940.03,48726.16,48804.36],
@@ -420,7 +420,7 @@ const fmtk=v=>'$'+(v/1000).toFixed(1)+'k';
 // ══ Matrices históricas por mes (0=Abr-25…12=Abr-26) ══
 // CLI_MES — base inicial
 const CLI_MES={};
-ALL_TERCS.forEach(t=>{ CLI_MES[t]=new Array(25).fill(0); });
+ALL_TERCS.forEach(t=>{ CLI_MES[t]=new Array(27).fill(0); });
 Object.assign(CLI_MES,{
   TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 308,309,307,307,308,308,309,323,379,379,379,379,342],
   CNT:       [0,0,0,0,0,0,0,0,0,0,0,0,  48, 48, 48, 47, 49, 49, 48, 50, 50, 50, 50, 50, 48],
@@ -436,7 +436,7 @@ Object.assign(CLI_MES,{
 });
 // SVC_MES — base inicial
 const SVC_MES={};
-ALL_TERCS.forEach(t=>{ SVC_MES[t]=new Array(25).fill(0); });
+ALL_TERCS.forEach(t=>{ SVC_MES[t]=new Array(27).fill(0); });
 Object.assign(SVC_MES,{
   TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 849,860,898,898,921,924,931,950,1014,1019,1020,1024,1027],
   CNT:       [0,0,0,0,0,0,0,0,0,0,0,0,  98, 98, 98, 96,104,104,103,105, 105, 105, 106, 106, 115],
@@ -453,7 +453,7 @@ Object.assign(SVC_MES,{
 
 // FACT_CT_MES — base inicial
 const FACT_CT_MES={};
-ALL_TERCS.forEach(t=>{ FACT_CT_MES[t]=new Array(25).fill(0); });
+ALL_TERCS.forEach(t=>{ FACT_CT_MES[t]=new Array(27).fill(0); });
 Object.assign(FACT_CT_MES,{
   TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 122.89,39.10,31.53,31.53,69.27,96.96,0,0,0,0,0,0,78.20],
   CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,517.50,517.50,517.50,517.50,517.50,0],
@@ -904,10 +904,8 @@ function buildChips(){
     applyFilters();
   });
   // Reset
-  document.getElementById('resetBtn').addEventListener('click',()=>{
-    activeTerc=new Set(ALL_TERCS);
-    activeMesAbsIdx=24; // Abr-26 = índice 24 en ALL_MESES
-    sel.value=24;
+  document.getElementById('resetBtn').addEventListener('click',()=>{\n    activeTerc=new Set(ALL_TERCS);
+    activeMesAbsIdx=parseInt(document.getElementById('mesSelect').value)||24;
     document.querySelectorAll('#filterTerc .chip').forEach(c=>c.classList.add('active'));
     applyFilters();
   });
@@ -922,7 +920,7 @@ function buildChips(){
   const GS_CONFIG = {
     SHEET_ID: '1W_48F6gUnrTmuUvqXKkHaTxk559yfbZVeBxpR7tAT78',
     enabled: true,       // siempre activo — datos 100% desde Google Sheets
-    refreshMinutes: 60,
+    refreshMinutes: 5,
   };
 
   // Convierte URL pública de Google Sheets a URL de CSV por hoja
@@ -1014,21 +1012,21 @@ function buildChips(){
     // Orden: índice 0 = Abr-25 (BASE_ABS=12 en ALL_MESES), índice 12 = Abr-26
     // GIDs numéricos — acceso directo a cada hoja sin depender del nombre
     const SHEET_NAMES = [
-      {key:'2025-04', name:'PROYECCION -ABRIL 2025',     gid:'573091368'},
-      {key:'2025-05', name:'PROYECCION -MAYO 2025',      gid:'1632201815'},
-      {key:'2025-06', name:'PROYECCION -JUNIO 2025',     gid:'334926907'},
-      {key:'2025-07', name:'PROYECCION -JULIO 2025',     gid:'644495086'},
-      {key:'2025-08', name:'PROYECCION -AGOSTO 2025',    gid:'1865458072'},
-      {key:'2025-09', name:'PROYECCION -SEPTIEMBRE 2025',gid:'1090016555'},
-      {key:'2025-10', name:'PROYECCION -OCTUBRE 2025',   gid:'1680109705'},
-      {key:'2025-11', name:'PROYECCION -NOVIEMBRE 2025', gid:'652574815'},
-      {key:'2025-12', name:'PROYECCION -DICIEMBRE 2025', gid:'1034856630'},
-      {key:'2026-01', name:'PROYECCION -ENERO 2026',     gid:'1274860642'},
-      {key:'2026-02', name:'PROYECCION -FEBRERO 2026',   gid:'493659489'},
-      {key:'2026-03', name:'PROYECCION -MARZO 2026',     gid:'1291578538'},
-      {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok', gid:'754061266'},
-      {key:'2026-05', name:'PROYECCION - MAYO 2026 ok',  gid:'992320056'},
-      {key:'2026-06', name:'PROYECCION - JUNIO 2026', gid:'1276205949'},
+      {key:'2025-04', name:'PROYECCION -ABRIL 2025',      gid:'573091368'},
+      {key:'2025-05', name:'PROYECCION -MAYO 2025',       gid:'1632201815'},
+      {key:'2025-06', name:'PROYECCION -JUNIO 2025',      gid:'334926907'},
+      {key:'2025-07', name:'PROYECCION -JULIO 2025',      gid:'644495086'},
+      {key:'2025-08', name:'PROYECCION -AGOSTO 2025',     gid:'1865458072'},
+      {key:'2025-09', name:'PROYECCION -SEPTIEMBRE 2025', gid:'1090016555'},
+      {key:'2025-10', name:'PROYECCION -OCTUBRE 2025',    gid:'1680109705'},
+      {key:'2025-11', name:'PROYECCION -NOVIEMBRE 2025',  gid:'652574815'},
+      {key:'2025-12', name:'PROYECCION -DICIEMBRE 2025',  gid:'1034856630'},
+      {key:'2026-01', name:'PROYECCION -ENERO 2026',      gid:'1274860642'},
+      {key:'2026-02', name:'PROYECCION -FEBRERO 2026',    gid:'493659489'},
+      {key:'2026-03', name:'PROYECCION -MARZO 2026',      gid:'1291578538'},
+      {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok',  gid:'754061266'},
+      {key:'2026-05', name:'PROYECCIÓN - MAYO 2026 ok',   gid:'992320056'},
+      {key:'2026-06', name:'PROYECCION - JUNIO 2026',     gid:'1276205949'},
     ];
 
     const TERC_MAP = {
@@ -1222,23 +1220,17 @@ function buildChips(){
           tmpSvc[t][sheetIdx]  = svcA + svcCT;
           tmpCli[t][sheetIdx]  = d.clientes.size||svcA;
           tmpCT[t][sheetIdx]   = Math.round(d.factCT*100)/100;
+          // Guardar byTerc para actualizar D{} después con el último mes real
+          if(!window._lastByTerc) window._lastByTerc = {};
+          const totalFact = ALL_TERCS.reduce((s,tt)=>s+(tmpFact[tt][sheetIdx]||0),0);
+          if(totalFact > 0) window._lastByTerc = {sheetIdx, byTerc: JSON.parse(JSON.stringify(
+            Object.fromEntries(Object.entries(byTerc).map(([k,v])=>([k,{
+              factA:v.factA, factCT:v.factCT,
+              svcA:v.idsA.size+v.svcA, svcCT:v.idsCT.size+v.svcCT,
+              cli:v.clientes.size||(v.idsA.size+v.svcA)
+            }])))
+          ))};
         });
-
-        // Si es el mes actual (última hoja), actualizar D{}
-        if(sheetIdx===SHEET_NAMES.length-1){
-          ALL_TERCS.forEach(t=>{
-            if(!D[t]) return;
-            const d=byTerc[t]||{factA:0,factCT:0,svcA:0,svcCT:0,idsA:new Set(),idsCT:new Set(),clientes:new Set()};
-            const svcA = d.idsA.size + d.svcA;
-            const svcCT= d.idsCT.size + d.svcCT;
-            D[t].factA  = Math.round(d.factA*100)/100;
-            D[t].factCT = Math.round(d.factCT*100)/100;
-            D[t].fact   = D[t].factA+D[t].factCT;
-            D[t].svcA   = svcA;
-            D[t].svcCT  = svcCT;
-            D[t].cli    = d.clientes.size||svcA;
-          });
-        }
       });
 
       // ── Diagnóstico: mostrar facturación total calculada por hoja ──
@@ -1268,6 +1260,20 @@ function buildChips(){
           if(tmpCT[t][i]  !==undefined && FACT_CT_MES[t]) FACT_CT_MES[t][absIdx] = tmpCT[t][i];
         }
       });
+
+      // ── Actualizar D{} con el último mes que tiene datos reales ──
+      if(window._lastByTerc && window._lastByTerc.byTerc){
+        ALL_TERCS.forEach(t=>{
+          if(!D[t]) return;
+          const d=window._lastByTerc.byTerc[t]||{factA:0,factCT:0,svcA:0,svcCT:0,cli:0};
+          D[t].factA  = d.factA;
+          D[t].factCT = d.factCT;
+          D[t].fact   = d.factA + d.factCT;
+          D[t].svcA   = d.svcA;
+          D[t].svcCT  = d.svcCT;
+          D[t].cli    = d.cli;
+        });
+      }
 
       // Identificar el último mes con datos reales y actualizar el corte
       let lastMesWithData = BASE_ABS; // empezar desde Abr-25
