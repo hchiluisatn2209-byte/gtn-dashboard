@@ -250,26 +250,26 @@
     </div>
   </div>
 
-  <!-- 3. FACTURACIÓN POR TERCERIZADORA (misma altura que fila de donuts) -->
-  <div class="card" style="margin-bottom:16px;height:220px;display:flex;flex-direction:column;overflow:hidden;">
+  <!-- 3. FACTURACIÓN POR TERCERIZADORA -->
+  <div class="card" style="margin-bottom:16px;">
     <div class="card-title"><span class="dot"></span>Facturación por Tercerizadora ($)</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0;">
-      <div style="display:flex;flex-direction:column;min-height:0;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
         <div style="font-size:9px;color:var(--turquesa);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Facturación ($)</div>
-        <canvas id="hbarChart" style="flex:1;min-height:0;width:100%!important;"></canvas>
+        <canvas id="hbarChart" height="160"></canvas>
       </div>
-      <div style="display:flex;flex-direction:column;min-height:0;">
+      <div>
         <div style="font-size:9px;color:var(--azul-c2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">N° Servicios</div>
-        <canvas id="svcChart" style="flex:1;min-height:0;width:100%!important;"></canvas>
+        <canvas id="svcChart" height="160"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- 4. TENDENCIA DE FACTURACIÓN (ancho completo) -->
+  <!-- 4. TENDENCIA DE FACTURACIÓN -->
   <div class="section-title">Tendencia de Facturación · Últimos 13 Meses</div>
   <div class="card" style="margin-bottom:22px;">
     <div class="card-title"><span class="dot"></span>Facturación Mensual</div>
-    <canvas id="trendChart" height="96"></canvas>
+    <canvas id="trendChart" height="160"></canvas>
     <div class="trend-meta">
       <div class="tm"><div class="tm-l">Máximo</div><div class="tm-v" style="color:var(--turquesa)" id="metaMax">—</div></div>
       <div class="tm"><div class="tm-l" data-meta="abr">Abr 2026</div><div class="tm-v" style="color:var(--magenta)" id="metaAbr">—</div></div>
@@ -726,7 +726,7 @@ function buildTrend(){
   if(cd) cd.textContent=ALL_MESES[activeMesAbsIdx];
 
   trendChart=new Chart(ctx,{type:'bar',data:{labels:win.labels,datasets:ds},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36}},
+    options:{responsive:true,maintainAspectRatio:true,layout:{padding:{top:36}},
       plugins:{legend:{display:actArr.length>1,position:'top',labels:{color:'#9BBCD8',font:{size:9},usePointStyle:true,pointStyleWidth:8,boxHeight:5,padding:12}},
         tooltip:{backgroundColor:'#0e2248',borderColor:C.turquesa,borderWidth:1,titleColor:C.turquesa,bodyColor:'#fff',
           titleFont:{size:12,weight:'bold'},
@@ -800,7 +800,7 @@ function buildHbar(){
   const colors  = items.map(i=>i.col);
 
   const sharedOpts = {
-    responsive:true, maintainAspectRatio:false,
+    responsive:true, maintainAspectRatio:true,
     layout:{padding:{top:24,bottom:2,left:2,right:2}},
     plugins:{
       legend:{display:false},
