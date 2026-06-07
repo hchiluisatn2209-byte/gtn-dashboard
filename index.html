@@ -581,27 +581,64 @@ function aggFact(){
          fact:isNaN(factA+factCT)?0:factA+factCT,svc,cli};
 }
 function aggEnlace(){
+  const mi=activeMesAbsIdx;
   const r={PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}};
+  const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][mi]:0),0);
   [...activeTerc].forEach(t=>{
     ALL_ENLACES.filter(k=>activeEnlace.has(k)).forEach(k=>{
-      r[k].svc+=D[t].enlace[k].svc; r[k].fact+=D[t].enlace[k].fact;
+      const enlData=D[t].enlace[k];
+      if(!enlData) return;
+      // Si hay datos en SVC_MES, escalar proporcionalmente
+      if(totalEnMatriz>0){
+        const svcTotal=ALL_ENLACES.reduce((s,ek)=>s+(D[t].enlace[ek]?D[t].enlace[ek].svc:0),0);
+        const svcMes=SVC_MES[t]?SVC_MES[t][mi]||0:D[t].svcA+D[t].svcCT;
+        const ratio=svcTotal>0?svcMes/svcTotal:1;
+        r[k].svc+=Math.round(enlData.svc*ratio);
+        r[k].fact+=enlData.fact;
+      } else {
+        r[k].svc+=enlData.svc; r[k].fact+=enlData.fact;
+      }
     });
   });
   return r;
 }
 function aggCliente(){
+  const mi=activeMesAbsIdx;
   const r={CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}};
+  const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][mi]:0),0);
   [...activeTerc].forEach(t=>{
     ALL_CLIENTES_TIPO.filter(k=>activeClienteTipo.has(k)).forEach(k=>{
-      r[k].svc+=D[t].cliente[k].svc; r[k].fact+=D[t].cliente[k].fact;
+      const cliData=D[t].cliente[k];
+      if(!cliData) return;
+      if(totalEnMatriz>0){
+        const svcTotal=ALL_CLIENTES_TIPO.reduce((s,ck)=>s+(D[t].cliente[ck]?D[t].cliente[ck].svc:0),0);
+        const svcMes=SVC_MES[t]?SVC_MES[t][mi]||0:D[t].svcA+D[t].svcCT;
+        const ratio=svcTotal>0?svcMes/svcTotal:1;
+        r[k].svc+=Math.round(cliData.svc*ratio);
+        r[k].fact+=cliData.fact;
+      } else {
+        r[k].svc+=cliData.svc; r[k].fact+=cliData.fact;
+      }
     });
   });
   return r;
 }
 function aggTipo(){
+  const mi=activeMesAbsIdx;
   const r={ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0};
+  const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][mi]:0),0);
   [...activeTerc].forEach(t=>{
-    ALL_SERVICIOS_TIPO.filter(k=>activeServicioTipo.has(k)).forEach(k=>{ r[k]+=(D[t].tipo[k]||0); });
+    ALL_SERVICIOS_TIPO.filter(k=>activeServicioTipo.has(k)).forEach(k=>{
+      const tipoVal=D[t].tipo[k]||0;
+      if(totalEnMatriz>0){
+        const svcTotal=ALL_SERVICIOS_TIPO.reduce((s,tk)=>s+(D[t].tipo[tk]||0),0);
+        const svcMes=SVC_MES[t]?SVC_MES[t][mi]||0:D[t].svcA+D[t].svcCT;
+        const ratio=svcTotal>0?svcMes/svcTotal:1;
+        r[k]+=Math.round(tipoVal*ratio);
+      } else {
+        r[k]+=tipoVal;
+      }
+    });
   });
   return r;
 }
@@ -813,8 +850,8 @@ function buildTrend(){
 }
 
 // ─── DONUT helper ───
-function buildDonut(canvasId,totalId,legendId,labels,vals,cols){
-  const total=vals.reduce((a,b)=>a+b,0);
+function buildDonut(canvasId,totalId,legendId,labels,vals,cols,forcedTotal){
+  const total=forcedTotal!==undefined?forcedTotal:vals.reduce((a,b)=>a+b,0);
   document.getElementById(totalId).textContent=total.toLocaleString('es-EC');
   const existing=Chart.getChart(canvasId);if(existing) existing.destroy();
   const ctx=document.getElementById(canvasId).getContext('2d');
@@ -832,11 +869,14 @@ function buildDonut(canvasId,totalId,legendId,labels,vals,cols){
 // ─── TIPO SERVICIO ───
 function buildTipo(){
   const tipo=aggTipo();
-  const otros=aggFact().svc-(tipo.ULTIMA_MILLA+tipo.FIBRA_OSCURA+tipo.ULTIMA_MILLA_MIXTA+tipo.CAPACIDAD);
+  const totalSvc=aggFact().svc;
+  const sumTipo=tipo.ULTIMA_MILLA+tipo.FIBRA_OSCURA+tipo.ULTIMA_MILLA_MIXTA+tipo.CAPACIDAD;
+  const otros=Math.max(0,totalSvc-sumTipo);
   buildDonut('tipoChart','tipoTotal','tipoLegend',
     ['Última Milla','Fibra Oscura','Últ. Milla Mixta','Capacidad/Starlink','Otros'],
-    [tipo.ULTIMA_MILLA,tipo.FIBRA_OSCURA,tipo.ULTIMA_MILLA_MIXTA,tipo.CAPACIDAD,Math.max(0,otros)],
-    [C.turquesa,C.magenta,C.naranja,'#38BDF8',C.morado]);
+    [tipo.ULTIMA_MILLA,tipo.FIBRA_OSCURA,tipo.ULTIMA_MILLA_MIXTA,tipo.CAPACIDAD,otros],
+    [C.turquesa,C.magenta,C.naranja,'#38BDF8',C.morado],
+    totalSvc);
 }
 
 // ─── HBAR — dos gráficos lado a lado ───
@@ -943,19 +983,23 @@ function buildDetalle(){
 // ─── ENLACE ───
 function buildEnlace(){
   const e=aggEnlace();
+  const totalSvc=aggFact().svc;
   buildDonut('enlaceChart','enlaceTotal','enlaceLegend',
     ['PRINCIPAL','BACKUP','INFRAESTRUCTURA'],
     [e.PRINCIPAL.svc,e.BACKUP.svc,e.INFRAESTRUCTURA.svc],
-    [C.turquesa,C.amarillo,C.morado]);
+    [C.turquesa,C.amarillo,C.morado],
+    totalSvc);
 }
 
 // ─── CLIENTE ───
 function buildCliente(){
   const c=aggCliente();
+  const totalSvc=aggFact().svc;
   buildDonut('clienteChart','clienteTotal','clienteLegend',
     ['CORPORATIVO','BANCA'],
     [c.CORPORATIVO.svc,c.BANCA.svc],
-    [C.magenta,C.azulC]);
+    [C.magenta,C.azulC],
+    totalSvc);
 }
 
 // ─── FACT TIPOS ───
