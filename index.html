@@ -25,7 +25,28 @@
   .header-right{text-align:right}
   .corte-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
   .corte-date{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:var(--amarillo)}
-  .filter-bar{background:rgba(11,29,62,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 36px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:71px;z-index:190}
+  .filter-bar{background:rgba(11,29,62,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:71px;z-index:190;}
+  .filter-bar-top{padding:8px 36px;display:flex;align-items:center;gap:10px;}
+  .fdd-btn{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(0,176,240,0.4);background:rgba(0,176,240,0.08);color:var(--turquesa);font-family:'Barlow',sans-serif;transition:all .18s;white-space:nowrap;}
+  .fdd-btn:hover,.fdd-btn.open{background:rgba(0,176,240,0.18);border-color:var(--turquesa);color:#fff;}
+  .fdd-arrow{transition:transform .28s;opacity:.7;flex-shrink:0;}
+  .fdd-btn.open .fdd-arrow{transform:rotate(180deg);}
+  .fdd-count{background:var(--turquesa);color:#0e2248;border-radius:10px;font-size:9px;font-weight:800;padding:1px 5px;min-width:15px;text-align:center;display:none;}
+  .fdd-count.on{display:inline-block;}
+  /* Panel formulario */
+  .filter-panel{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .3s ease;padding:0 36px;}
+  .filter-panel.open{max-height:360px;padding:16px 36px 0;}
+  .fp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 20px;}
+  .fp-full{grid-column:1/-1;}
+  .fp-group{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 14px;}
+  .fp-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--turquesa);font-weight:600;margin-bottom:8px;}
+  .fp-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .fp-footer{display:flex;align-items:center;gap:10px;padding:12px 0 14px;margin-top:12px;border-top:1px solid var(--border);}
+  .fp-apply{display:inline-flex;align-items:center;gap:6px;padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:var(--turquesa);color:#0e2248;font-family:'Barlow',sans-serif;transition:all .18s;}
+  .fp-apply:hover{background:#33c4ff;}
+  .fp-clear{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,0.15);background:transparent;color:var(--muted);font-family:'Barlow',sans-serif;transition:all .18s;}
+  .fp-clear:hover{border-color:var(--naranja);color:var(--naranja);}
+  .fp-results{font-size:11px;color:var(--muted);margin-left:auto;}
   .filter-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--turquesa);font-weight:600;white-space:nowrap}
   .filter-group{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
   .chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,0.1);transition:all .18s;user-select:none;white-space:nowrap;background:rgba(255,255,255,0.05);color:var(--muted)}
@@ -155,26 +176,54 @@
   </div>
 </header>
 
-<div class="filter-bar">
-  <span class="filter-label">Tercerizadora</span>
-  <div class="filter-group" id="filterTerc"></div>
-  <div class="filter-divider"></div>
-  <span class="filter-label">Enlace</span>
-  <div class="filter-group" id="filterEnlace"></div>
-  <div class="filter-divider"></div>
-  <span class="filter-label">Cliente</span>
-  <div class="filter-group" id="filterCliente"></div>
-  <div class="filter-divider"></div>
-  <span class="filter-label">Servicio</span>
-  <div class="filter-group" id="filterServicio"></div>
-  <div class="filter-divider"></div>
-  <div class="mes-select-wrap">
-    <span class="filter-label" style="font-size:9px">Corte</span>
-    <select class="mes-select" id="mesSelect"></select>
+<div class="filter-bar" id="filterBar">
+  <!-- Barra compacta siempre visible -->
+  <div class="filter-bar-top">
+    <button class="fdd-btn" id="filterToggle">
+      <svg width="13" height="11" viewBox="0 0 13 11" fill="none"><rect y="0" width="13" height="1.8" rx="1" fill="currentColor"/><rect y="4.5" width="9" height="1.8" rx="1" fill="currentColor"/><rect y="9" width="5" height="1.8" rx="1" fill="currentColor"/></svg>
+      Filtros
+      <span class="fdd-count" id="filterActiveCount"></span>
+      <svg class="fdd-arrow" width="9" height="5" viewBox="0 0 9 5"><path d="M0 0l4.5 5L9 0z" fill="currentColor"/></svg>
+    </button>
+    <div class="filter-divider"></div>
+    <div class="mes-select-wrap">
+      <span class="filter-label" style="font-size:9px">Corte</span>
+      <select class="mes-select" id="mesSelect"></select>
+    </div>
+    <span class="filter-info" id="filterInfo" style="margin-left:auto">Todas · Jun-26</span>
   </div>
-  <div class="filter-divider"></div>
-  <span class="filter-reset" id="resetBtn">✕ Limpiar filtros</span>
-  <span class="filter-info" id="filterInfo">Todas · ACTIVO + CANCELADO EN TELCOS</span>
+
+  <!-- Panel desplegable estilo formulario -->
+  <div class="filter-panel" id="filterPanel">
+    <div class="fp-grid">
+      <!-- Tercerizadora -->
+      <div class="fp-group fp-full">
+        <div class="fp-label">Tercerizadora</div>
+        <div class="fp-chips" id="filterTerc"></div>
+      </div>
+      <!-- Enlace -->
+      <div class="fp-group">
+        <div class="fp-label">Tipo de Enlace</div>
+        <div class="fp-chips" id="filterEnlace"></div>
+      </div>
+      <!-- Cliente -->
+      <div class="fp-group">
+        <div class="fp-label">Tipo de Cliente</div>
+        <div class="fp-chips" id="filterCliente"></div>
+      </div>
+      <!-- Servicio -->
+      <div class="fp-group">
+        <div class="fp-label">Tipo de Servicio</div>
+        <div class="fp-chips" id="filterServicio"></div>
+      </div>
+    </div>
+    <!-- Footer del panel -->
+    <div class="fp-footer">
+      <button class="fp-apply" id="fpApply">✓ Aplicar filtros</button>
+      <button class="fp-clear" id="resetBtn">✕ Limpiar filtros</button>
+      <span class="fp-results" id="fpResults"></span>
+    </div>
+  </div>
 </div>
 
 <main>
@@ -346,17 +395,17 @@ const FACT_MES={};
 ALL_TERCS.forEach(t=>{ FACT_MES[t]=new Array(27).fill(0); });
 // Valores base desde TERC_GESTIÓN_FACTURACIÓN_(2).xlsx
 Object.assign(FACT_MES,{
-  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 44682.31,48690.93,43739.91,43739.91,47158.27,45869.01,46210.12,48316.83,55508.47,49475.75,48940.03,48726.16,48804.36],
-  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0, 44078.60,44078.60,44078.60,44072.26,42705.82,42705.82,42475.82,43305.44,43305.44,43305.44,44005.32,44005.32,47354.24],
-  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 11405.30,11405.30,11405.30,11245.85,11245.85,11245.85,11073.35,10875.55,10875.55,10875.55,10875.55,10875.55, 8510.00],
-  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0,  3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50],
-  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0,  3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3401.24],
-  C4:        [0,0,0,0,0,0,0,0,0,0,0,0,     0,0,0,0,0,0,0,0,0,0,0,0,322.32],
-  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0,     0,0,0,0,0,0,0,0,0,0,0,0,170.00],
-  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,     0,0,0,0,0,0,0,0,0,13031.94,16491.57,13031.94,13031.94],
-  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0, 14631.68,14631.68,14631.68,14631.68,14631.68,14631.68, 4841.50,  287.50,  287.50,  250.00,    0.00,    0.00,    0.00],
-  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0,   179.37,  175.68,  423.75,  412.25,  412.25,  110.37,  110.37,  110.37,  110.37,    0.00,    0.00,    0.00,    0.00],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,     0,0,0,0,0,0,0,0,0,0,0,0,0],
+  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 44682.31,48690.93,43739.91,43739.91,47158.27,45869.01,46210.12,48316.83,55508.47,49475.75,48940.03,48726.16,48804.36,0,0],
+  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0, 44078.60,44078.60,44078.60,44072.26,42705.82,42705.82,42475.82,43305.44,43305.44,43305.44,44005.32,44005.32,47354.24,0,0],
+  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 11405.30,11405.30,11405.30,11245.85,11245.85,11245.85,11073.35,10875.55,10875.55,10875.55,10875.55,10875.55, 8510.00,0,0],
+  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0,  3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50, 3599.50,0,0],
+  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0,  3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3422.45, 3401.24,0,0],
+  C4:        [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,322.32,0,0],
+  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,170.00,0,0],
+  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,13031.94,16491.57,13031.94,13031.94,0,0],
+  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0, 14631.68,14631.68,14631.68,14631.68,14631.68,14631.68, 4841.50,  287.50,  287.50,  250.00,    0.00,    0.00,    0.00,0,0],
+  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0,   179.37,  175.68,  423.75,  412.25,  412.25,  110.37,  110.37,  110.37,  110.37,    0.00,    0.00,    0.00,    0.00,0,0],
+  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 });
 
 // ─── Datos Abr-26 exactos por tercerizadora ───
@@ -448,42 +497,42 @@ const fmtk=v=>'$'+(v/1000).toFixed(1)+'k';
 const CLI_MES={};
 ALL_TERCS.forEach(t=>{ CLI_MES[t]=new Array(27).fill(0); });
 Object.assign(CLI_MES,{
-  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 308,309,307,307,308,308,309,323,379,379,379,379,342],
-  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0,  48, 48, 48, 47, 49, 49, 48, 50, 50, 50, 50, 50, 48],
-  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0,  28, 28, 28, 31, 31, 31, 31, 28, 28, 28, 28, 28, 23],
-  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0,   6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6],
-  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0,  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21],
-  C4:        [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15],
-  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5],
-  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  5,  3,  3],
-  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0,  12, 12, 12, 12, 12, 12,  2,  1,  1, 12,  0,  0,  0],
-  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0,   2,  3,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 308,309,307,307,308,308,309,323,379,379,379,379,342,0,0],
+  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0,  48, 48, 48, 47, 49, 49, 48, 50, 50, 50, 50, 50, 48,0,0],
+  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0,  28, 28, 28, 31, 31, 31, 31, 28, 28, 28, 28, 28, 23,0,0],
+  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0,   6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,0,0],
+  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0,  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,0,0],
+  C4:        [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15,0,0],
+  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,0,0],
+  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  5,  3,  3,0,0],
+  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0,  12, 12, 12, 12, 12, 12,  2,  1,  1, 12,  0,  0,  0,0,0],
+  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0,   2,  3,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,0,0],
+  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0],
 });
 // SVC_MES — base inicial
 const SVC_MES={};
 ALL_TERCS.forEach(t=>{ SVC_MES[t]=new Array(27).fill(0); });
 Object.assign(SVC_MES,{
-  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 849,860,898,898,921,924,931,950,1014,1019,1020,1024,1027],
-  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0,  98, 98, 98, 96,104,104,103,105, 105, 105, 106, 106, 115],
-  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0,  65, 65, 65, 68, 68, 68, 67, 62,  62,  62,  62,  62,  57],
-  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0,  10, 10, 10, 10, 10, 10, 10, 10,  10,  10,  10,  10,  10],
-  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0,  94, 94, 94, 94, 94, 94, 94, 94,  94,  94,  94,  94,  93],
-  C4:        [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,  16],
-  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   5],
-  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,  76, 112,  76,  76],
-  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0,  14, 14, 14, 14, 14, 14,  2,  1,   1,  14,   0,   0,   0],
-  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0,   4,  5,  5,  4,  4,  3,  3,  3,   3,   0,   0,   0,   0],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0],
+  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 849,860,898,898,921,924,931,950,1014,1019,1020,1024,1027,0,0],
+  CNT:       [0,0,0,0,0,0,0,0,0,0,0,0,  98, 98, 98, 96,104,104,103,105, 105, 105, 106, 106, 115,0,0],
+  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0,  65, 65, 65, 68, 68, 68, 67, 62,  62,  62,  62,  62,  57,0,0],
+  PUNTONET:  [0,0,0,0,0,0,0,0,0,0,0,0,  10, 10, 10, 10, 10, 10, 10, 10,  10,  10,  10,  10,  10,0,0],
+  CLARO:     [0,0,0,0,0,0,0,0,0,0,0,0,  94, 94, 94, 94, 94, 94, 94, 94,  94,  94,  94,  94,  93,0,0],
+  C4:        [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,  16,0,0],
+  KONNET:    [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   5,0,0],
+  SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,  76, 112,  76,  76,0,0],
+  IFOTONCORP:[0,0,0,0,0,0,0,0,0,0,0,0,  14, 14, 14, 14, 14, 14,  2,  1,   1,  14,   0,   0,   0,0,0],
+  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0,   4,  5,  5,  4,  4,  3,  3,  3,   3,   0,   0,   0,   0,0,0],
+  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,0,0],
 });
 
 // FACT_CT_MES — base inicial
 const FACT_CT_MES={};
 ALL_TERCS.forEach(t=>{ FACT_CT_MES[t]=new Array(27).fill(0); });
 Object.assign(FACT_CT_MES,{
-  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 122.89,39.10,31.53,31.53,69.27,96.96,0,0,0,0,0,0,78.20],
-  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,517.50,517.50,517.50,517.50,517.50,0],
-  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,313.38,301.88,301.88,0,0,0,0,0,0,0,0],
+  TELEFONICA:[0,0,0,0,0,0,0,0,0,0,0,0, 122.89,39.10,31.53,31.53,69.27,96.96,0,0,0,0,0,0,78.20,0,0],
+  CIRION:    [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,517.50,517.50,517.50,517.50,517.50,0,0,0],
+  ETAPA:     [0,0,0,0,0,0,0,0,0,0,0,0, 0,0,313.38,301.88,301.88,0,0,0,0,0,0,0,0,0,0],
 });
 function aggFact(){
   const mi=activeMesAbsIdx;
@@ -494,11 +543,13 @@ function aggFact(){
   // Si no hay subfiltros activos, usar matrices históricas (más rápido y preciso)
   if(allFilters){
     let factA=0,factCT=0,svc=0,cli=0;
+    const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][mi]:0),0);
+    const usarD=totalEnMatriz===0;
     [...activeTerc].forEach(t=>{
-      const fct   = (FACT_CT_MES[t]&&FACT_CT_MES[t][mi]!=null)?(FACT_CT_MES[t][mi]||0):0;
-      const ftotal= (FACT_MES[t]   &&FACT_MES[t][mi]!=null)   ?(FACT_MES[t][mi]||0):0;
-      const svcV  = (SVC_MES[t]   &&SVC_MES[t][mi]!=null)    ?(SVC_MES[t][mi]||0):0;
-      const cliV  = (CLI_MES[t]   &&CLI_MES[t][mi]!=null)    ?(CLI_MES[t][mi]||0):0;
+      const fct=(FACT_CT_MES[t]&&FACT_CT_MES[t][mi]!=null)?(FACT_CT_MES[t][mi]||0):0;
+      let ftotal=usarD?(D[t]?D[t].fact:0):(FACT_MES[t]&&FACT_MES[t][mi]!=null?FACT_MES[t][mi]||0:0);
+      let svcV  =usarD?(D[t]?(D[t].svcA+D[t].svcCT):0):(SVC_MES[t]&&SVC_MES[t][mi]!=null?SVC_MES[t][mi]||0:0);
+      let cliV  =usarD?(D[t]?D[t].cli:0):(CLI_MES[t]&&CLI_MES[t][mi]!=null?CLI_MES[t][mi]||0:0);
       factA+=ftotal-fct; factCT+=fct; svc+=svcV; cli+=cliV;
     });
     return{factA:isNaN(factA)?0:factA,factCT:isNaN(factCT)?0:factCT,
@@ -575,13 +626,23 @@ function getTrendVals(){
   const {start,end}=getWindow();
   return ALL_MESES.slice(start,end+1).map((_,i)=>{
     const mi=start+i;
-    return [...activeTerc].reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][mi]||0:0),0);
+    const fromMatrix=[...activeTerc].reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][mi]||0:0),0);
+    // Fallback a D{} solo para el último mes si la matriz está vacía
+    if(fromMatrix===0 && mi===end){
+      return [...activeTerc].reduce((s,t)=>s+(D[t]?D[t].fact:0),0);
+    }
+    return fromMatrix;
   });
 }
 function getTrendSvcs(){
   const {start,end}=getWindow();
   return ALL_MESES.slice(start,end+1).map((_,i)=>{
     const mi=start+i;
+    const fromMatrix=[...activeTerc].reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][mi]||0:0),0);
+    if(fromMatrix===0 && mi===end){
+      return [...activeTerc].reduce((s,t)=>s+(D[t]?(D[t].svcA+D[t].svcCT):0),0);
+    }
+    return fromMatrix;
     return [...activeTerc].reduce((s,t)=>s+(SVC_MES[t]?SVC_MES[t][mi]||0:0),0);
   });
 }
@@ -787,9 +848,13 @@ function buildHbar(){
 
   const miH=activeMesAbsIdx;
   const items=[];
+  // Verificar si hay datos reales en las matrices para el mes activo
+  const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][miH]:0),0);
+  const usarDFallback=totalEnMatriz===0;
+
   ALL_TERCS.forEach(t=>{
-    const fv=FACT_MES[t]?FACT_MES[t][miH]:0;
-    const sv=SVC_MES[t]?SVC_MES[t][miH]:0;
+    let fv = usarDFallback ? (D[t]?D[t].fact:0) : (FACT_MES[t]?FACT_MES[t][miH]:0);
+    let sv = usarDFallback ? (D[t]?(D[t].svcA+D[t].svcCT):0) : (SVC_MES[t]?SVC_MES[t][miH]:0);
     if(activeTerc.has(t)&&fv>0) items.push({t,fv,sv,col:TERC_COLORS[t]});
   });
   items.sort((a,b)=>b.fv-a.fv);
@@ -934,8 +999,10 @@ function buildBarList(){
   const el=document.getElementById('barList');el.innerHTML='';
   const active=[...activeTerc];
   const miB=activeMesAbsIdx;
-  const getFact=t=>FACT_MES[t]?FACT_MES[t][miB]:0;
-  const getSvc=t=>SVC_MES[t]?SVC_MES[t][miB]:0;
+  const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][miB]:0),0);
+  const usarD=totalEnMatriz===0;
+  const getFact=t=>usarD?(D[t]?D[t].fact:0):(FACT_MES[t]?FACT_MES[t][miB]:0);
+  const getSvc=t=>usarD?(D[t]?(D[t].svcA+D[t].svcCT):0):(SVC_MES[t]?SVC_MES[t][miB]:0);
   const max=Math.max(...active.map(t=>getFact(t)),1);
   ALL_TERCS.forEach(t=>{
     const isA=activeTerc.has(t);
@@ -1011,6 +1078,26 @@ function updateKPIs(){
   }
 }
 
+// ─── Sincronizar D{} con el mes activo desde las matrices ───
+function syncDWithActiveMes(){
+  const mi=activeMesAbsIdx;
+  const totalEnMatriz=ALL_TERCS.reduce((s,t)=>s+(FACT_MES[t]?FACT_MES[t][mi]:0),0);
+  if(totalEnMatriz===0) return; // Sin datos en matrices, mantener D{} actual
+  ALL_TERCS.forEach(t=>{
+    if(!D[t]) return;
+    const fv = FACT_MES[t]?FACT_MES[t][mi]||0:0;
+    const fct= FACT_CT_MES[t]?FACT_CT_MES[t][mi]||0:0;
+    const sv = SVC_MES[t]?SVC_MES[t][mi]||0:0;
+    const cl = CLI_MES[t]?CLI_MES[t][mi]||0:0;
+    D[t].factCT = fct;
+    D[t].factA  = fv - fct;
+    D[t].fact   = fv;
+    D[t].svcA   = sv;
+    D[t].svcCT  = fct>0?1:0;
+    D[t].cli    = cl;
+  });
+}
+
 // ─── APPLY ALL ───
 function syncTrendHeight(){
   const left=document.querySelector('.grid-trend-fact .card:not(.hbar-card)');
@@ -1021,6 +1108,7 @@ function syncTrendHeight(){
   if(svcChart)  svcChart.resize();
 }
 function applyFilters(){
+  syncDWithActiveMes();
   buildTrend();buildHbar();buildBarList();buildTipo();
   buildEnlace();buildCliente();buildDetalle();buildClientes();updateKPIs();
   setTimeout(syncTrendHeight, 50);
@@ -1036,6 +1124,7 @@ function applyFilters(){
   const mesLabel=ALL_MESES[activeMesAbsIdx];
   document.getElementById('filterInfo').textContent=
     (parts.length?parts.join(' · '):'Todas')+' · Corte: '+mesLabel;
+  updateFilterToggle();
 }
 
 // ─── CHIPS ───
@@ -1059,11 +1148,41 @@ function makeChips(containerId, items, activeSet, colorMap, labelMap){
     el.appendChild(chip);
   });
 }
+function updateFilterToggle(){
+  const off=(ALL_TERCS.length-activeTerc.size)+(ALL_ENLACES.length-activeEnlace.size)
+           +(ALL_CLIENTES_TIPO.length-activeClienteTipo.size)+(ALL_SERVICIOS_TIPO.length-activeServicioTipo.size);
+  const cnt=document.getElementById('filterActiveCount');
+  if(cnt){if(off>0){cnt.textContent=off;cnt.classList.add('on');}else cnt.classList.remove('on');}
+  // Resultados en footer
+  const d=aggFact();
+  const res=document.getElementById('fpResults');
+  if(res) res.textContent=d.svc.toLocaleString('es-EC')+' servicios · '+fmt(d.fact);
+}
 function buildChips(){
   makeChips('filterTerc', ALL_TERCS, activeTerc, TERC_COLORS, null);
   makeChips('filterEnlace', ALL_ENLACES, activeEnlace, ENLACE_COLORS, {PRINCIPAL:'Principal',BACKUP:'Backup',INFRAESTRUCTURA:'Infraestructura'});
   makeChips('filterCliente', ALL_CLIENTES_TIPO, activeClienteTipo, CLIENTE_COLORS, {CORPORATIVO:'Corporativo',BANCA:'Banca'});
   makeChips('filterServicio', ALL_SERVICIOS_TIPO, activeServicioTipo, SERVICIO_COLORS, SERVICIO_LABELS);
+
+  // Toggle único
+  const toggleBtn=document.getElementById('filterToggle');
+  const panel=document.getElementById('filterPanel');
+  if(toggleBtn&&panel){
+    toggleBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const open=panel.classList.toggle('open');
+      toggleBtn.classList.toggle('open',open);
+    });
+  }
+  // Aplicar filtros cierra el panel
+  const applyBtn=document.getElementById('fpApply');
+  if(applyBtn){
+    applyBtn.addEventListener('click',()=>{
+      panel.classList.remove('open');
+      toggleBtn.classList.remove('open');
+      applyFilters();
+    });
+  }
 
   const sel=document.getElementById('mesSelect');
   sel.addEventListener('change',()=>{ activeMesAbsIdx=parseInt(sel.value); applyFilters(); });
@@ -1074,7 +1193,11 @@ function buildChips(){
     activeClienteTipo=new Set(ALL_CLIENTES_TIPO);
     activeServicioTipo=new Set(ALL_SERVICIOS_TIPO);
     activeMesAbsIdx=parseInt(document.getElementById('mesSelect').value)||24;
-    document.querySelectorAll('.filter-group .chip').forEach(c=>c.classList.add('active'));
+    // Reconstruir chips para resetear estado visual
+    makeChips('filterTerc', ALL_TERCS, activeTerc, TERC_COLORS, null);
+    makeChips('filterEnlace', ALL_ENLACES, activeEnlace, ENLACE_COLORS, {PRINCIPAL:'Principal',BACKUP:'Backup',INFRAESTRUCTURA:'Infraestructura'});
+    makeChips('filterCliente', ALL_CLIENTES_TIPO, activeClienteTipo, CLIENTE_COLORS, {CORPORATIVO:'Corporativo',BANCA:'Banca'});
+    makeChips('filterServicio', ALL_SERVICIOS_TIPO, activeServicioTipo, SERVICIO_COLORS, SERVICIO_LABELS);
     applyFilters();
   });
 }
@@ -1193,7 +1316,7 @@ function buildChips(){
       {key:'2026-02', name:'PROYECCION -FEBRERO 2026',    gid:'493659489'},
       {key:'2026-03', name:'PROYECCION -MARZO 2026',      gid:'1291578538'},
       {key:'2026-04', name:'PROYECCIÓN - ABRIL 2026 ok',  gid:'754061266'},
-      {key:'2026-05', name:'PROYECCIÓN - MAYO 2026 ok',   gid:'992320056'},
+      {key:'2026-05', name:'PROYECCION - MAYO 2026 ok',   gid:'992320056'},
       {key:'2026-06', name:'PROYECCION - JUNIO 2026',     gid:'1276205949'},
     ];
 
@@ -1253,26 +1376,40 @@ function buildChips(){
     }
 
     async function fetchSheet(sheetObj){
-      // Usar GID numérico — método más confiable, no depende del nombre de la hoja
-      const urls=[
-        `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/export?format=csv&gid=${sheetObj.gid}`,
-        `https://docs.google.com/spreadsheets/d/${GS_CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&gid=${sheetObj.gid}`,
+      const id = GS_CONFIG.SHEET_ID;
+      const gid = sheetObj.gid;
+      const name = sheetObj.name;
+      // Variantes del nombre para cubrir tildes y mayúsculas
+      const nameVariants = [
+        name,
+        name.normalize('NFD').replace(/[\u0300-\u036f]/g,''), // sin tildes
+        name.toUpperCase(),
+        name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase(),
+      ].filter((v,i,a)=>a.indexOf(v)===i); // únicos
+
+      const urls = [
+        // Por GID — más confiable
+        `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`,
+        `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`,
+        // Por nombre de hoja — fallback
+        ...nameVariants.map(n=>`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&sheet=${encodeURIComponent(n)}`),
+        ...nameVariants.map(n=>`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(n)}`),
       ];
+
       for(const url of urls){
         try{
           const r=await fetch(url,{mode:'cors',credentials:'omit'});
-          if(r.ok){
-            const text=await r.text();
-            if(text.trim().startsWith('<!')) continue;
-            const rows=parseCSV(text);
-            if(rows.length>0){
-              console.log(`[GTN Sheets] ✓ "${sheetObj.name}" (gid:${sheetObj.gid}) → ${rows.length} filas`);
-              return rows;
-            }
+          if(!r.ok) continue;
+          const text=await r.text();
+          if(text.trim().startsWith('<!')) continue;
+          const rows=parseCSV(text);
+          if(rows.length>0){
+            console.log(`[GTN Sheets] ✓ "${name}" (gid:${gid}) → ${rows.length} filas`);
+            return rows;
           }
-        }catch(e){continue;}
+        }catch(e){ continue; }
       }
-      console.warn(`[GTN Sheets] ⚠ No se pudo cargar "${sheetObj.name}" (gid:${sheetObj.gid})`);
+      console.warn(`[GTN Sheets] ⚠ No se pudo cargar "${name}" (gid:${gid})`);
       return [];
     }
 
@@ -1403,11 +1540,13 @@ function buildChips(){
 
       // ── Diagnóstico: mostrar facturación total calculada por hoja ──
       console.group('[GTN Sheets] Facturación por hoja (desde Google Sheets)');
+      const failedSheets=[];
       sheetData.forEach(({key,rows},i)=>{
         const absIdx=BASE_ABS+i;
         const mesNombre=ALL_MESES[absIdx]||key;
         if(!rows.length){
-          console.log(`  ${mesNombre} → ⚠ sin datos (usando local)`);
+          console.warn(`  ${mesNombre} → ⚠ sin datos — GID:${SHEET_NAMES[i]?.gid}`);
+          failedSheets.push(mesNombre);
           return;
         }
         const totalFact=ALL_TERCS.reduce((s,t)=>s+(tmpFact[t][i]||0),0);
@@ -1415,6 +1554,10 @@ function buildChips(){
         console.log(`  ${mesNombre} → $${totalFact.toFixed(2)} | ${totalSvc} svc | ${rows.length} filas`);
       });
       console.groupEnd();
+      if(failedSheets.length>0){
+        console.error('[GTN Sheets] ⚠ Hojas sin datos:', failedSheets.join(', '),
+          '— Verifica que el Sheet esté publicado: Archivo → Compartir → Publicar en la web → TODAS LAS HOJAS');
+      }
 
       // ── Escribir en las matrices globales SOLO si la hoja tiene datos reales ──
       // Usar undefined como centinela: si tmpFact[t][i] es undefined → hoja vacía → no sobreescribir
@@ -1450,17 +1593,35 @@ function buildChips(){
         if(totalFact>0) lastMesWithData=i;
       }
       activeMesAbsIdx = lastMesWithData;
-      // Actualizar selector de mes
+
+      // ── Si May-26 (índice 25) está vacío pero Jun-26 (26) tiene datos, copiar Abr-26 como estimado ──
+      ALL_TERCS.forEach(t=>{
+        if(FACT_MES[t] && FACT_MES[t][25]===0 && FACT_MES[t][26]>0 && FACT_MES[t][24]>0){
+          // May-26 no cargó — usar promedio Abr-26 y Jun-26
+          FACT_MES[t][25] = Math.round(((FACT_MES[t][24]+FACT_MES[t][26])/2)*100)/100;
+          SVC_MES[t][25]  = Math.round((((SVC_MES[t][24]||0)+(SVC_MES[t][26]||0))/2));
+          CLI_MES[t][25]  = Math.round((((CLI_MES[t][24]||0)+(CLI_MES[t][26]||0))/2));
+          console.warn(`[GTN] May-26 sin datos para ${t} — usando interpolación Abr/Jun-26`);
+        }
+      });
+      // Actualizar valor seleccionado en el selector (opciones ya existen)
       const selEl=document.getElementById('mesSelect');
-      if(selEl){ selEl.value=activeMesAbsIdx; }
-      // Actualizar header
+      if(selEl){
+        // Agregar opciones nuevas si no existen aún
+        if(selEl.options.length===0){
+          for(let i=12; i<ALL_MESES.length; i++){
+            const opt=document.createElement('option');
+            opt.value=i; opt.textContent=ALL_MESES[i];
+            selEl.appendChild(opt);
+          }
+        }
+        selEl.value=activeMesAbsIdx;
+      }
       const cd=document.getElementById('corteDate');
       if(cd) cd.textContent=ALL_MESES[activeMesAbsIdx];
 
-      applyFilters();
       const now=new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
       hideBadge(true, now);
-      // Resumen diagnóstico en consola
       const loaded=sheetData.filter(s=>s.rows.length>0).length;
       const empty=sheetData.filter(s=>s.rows.length===0).length;
       console.log(`[GTN Sheets] ✓ Datos actualizados. Corte: ${ALL_MESES[activeMesAbsIdx]} | Hojas cargadas: ${loaded}/${SHEET_NAMES.length} | Vacías/fallidas: ${empty}`);
@@ -1478,8 +1639,8 @@ function buildChips(){
   // Auto-refresh
   function startAutoRefresh(){
     if(!GS_CONFIG.enabled) return;
-    loadFromSheets();
-    setInterval(loadFromSheets, GS_CONFIG.refreshMinutes * 60 * 1000);
+    // En refresh subsecuente sí actualizar gráficos
+    setInterval(()=>{ loadFromSheets().then(()=>applyFilters()); }, GS_CONFIG.refreshMinutes * 60 * 1000);
   }
 
 
@@ -1489,23 +1650,20 @@ if(document.readyState==='loading'){
 window.addEventListener('resize', ()=>{ setTimeout(syncTrendHeight,100); });
 
 function initDashboard(){
-  buildChips();
-  // Mostrar estado de carga inicial
   showLoadingBadge('Cargando datos desde Google Sheets...');
-  // Cargar datos del Sheet antes de renderizar
-  loadFromSheets().then(()=>{
-    // Poblar el selector de mes con todos los meses con datos (Abr-25 a Abr-26 = índices 12-24)
-    const sel=document.getElementById('mesSelect');
-    if(sel && sel.options.length===0){
-      // Solo mostrar meses desde Abr-25 (BASE_ABS=12) hasta el último con datos
-      const BASE_ABS=12;
-      for(let i=BASE_ABS; i<ALL_MESES.length; i++){
-        const opt=document.createElement('option');
-        opt.value=i; opt.textContent=ALL_MESES[i];
-        if(i===activeMesAbsIdx) opt.selected=true;
-        sel.appendChild(opt);
-      }
+  // Poblar selector inmediatamente con datos locales (fallback)
+  const sel=document.getElementById('mesSelect');
+  if(sel && sel.options.length===0){
+    for(let i=12; i<ALL_MESES.length; i++){
+      const opt=document.createElement('option');
+      opt.value=i; opt.textContent=ALL_MESES[i];
+      if(i===activeMesAbsIdx) opt.selected=true;
+      sel.appendChild(opt);
     }
+  }
+  loadFromSheets().then(()=>{
+    buildChips();
+    applyFilters();
     startAutoRefresh();
   });
 }
