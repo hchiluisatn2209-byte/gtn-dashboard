@@ -1528,6 +1528,8 @@ function buildChips(){
 
         // Agrupar por tercerizadora + estado
         const byTerc={};
+        // ── Diagnóstico: tercerizadoras y estados no reconocidos ──
+        const _unknownTerc={}, _unknownEstado={}, _skippedFact={};
         rows.forEach(row=>{
           const t=normTerc(row[tercCol]);
           const e=normEstado(row[estadoCol]);
@@ -1538,6 +1540,24 @@ function buildChips(){
           const tipoEnl=tipoEnlCol?(row[tipoEnlCol]||'').trim().toUpperCase():'PRINCIPAL';
           const tipoCli=tipoCliCol?(row[tipoCliCol]||'').trim().toUpperCase():'CORPORATIVO';
           const idFact=idCol?(row[idCol]||'').trim():'';
+
+          // Log tercerizadora no mapeada (retorna el nombre en mayúsculas pero no está en ALL_TERCS)
+          if(t && !ALL_TERCS.includes(t)){
+            _unknownTerc[t]=(_unknownTerc[t]||0)+f;
+          }
+          // Log estado no reconocido con facturación
+          if(!e && f>0){
+            const rawE=(row[estadoCol]||'').trim();
+            _unknownEstado[rawE]=(_unknownEstado[rawE]||0)+f;
+          }
+          // Log filas saltadas (sin tercerizadora o sin estado) con facturación
+          if((!t||!e) && f>0){
+            const rawT=(row[tercCol]||'').trim();
+            const rawE=(row[estadoCol]||'').trim();
+            const key=`TERC="${rawT}" ESTADO="${rawE}"`;
+            _skippedFact[key]=(_skippedFact[key]||0)+f;
+          }
+
           if(!t||!e) return;
           if(!byTerc[t]) byTerc[t]={
             factA:0,factCT:0,svcA:0,svcCT:0,
@@ -1571,6 +1591,30 @@ function buildChips(){
             }
           }
         });
+
+        // ── Mostrar diagnóstico de la hoja actual ──
+        const mesNombreDiag = SHEET_NAMES[sheetIdx]?.name || sheetIdx;
+        const totalLeido = Object.values(byTerc).reduce((s,d)=>s+d.factA+d.factCT,0);
+
+        // Resumen por tercerizadora reconocida
+        console.group(`[GTN Diag] "${mesNombreDiag}" → $${totalLeido.toFixed(2)}`);
+        Object.entries(byTerc).forEach(([t,d])=>{
+          if(d.factA+d.factCT>0)
+            console.log(`  ${t}: factA=$${d.factA.toFixed(2)} factCT=$${d.factCT.toFixed(2)} svcA=${d.idsA.size+d.svcA}`);
+        });
+        // Tercerizadoras no reconocidas (en el sheet pero no en ALL_TERCS)
+        if(Object.keys(_unknownTerc).length>0){
+          console.warn(`  ⚠ TERCERIZADORAS NO EN ALL_TERCS (facturación perdida):`, _unknownTerc);
+        }
+        // Estados no reconocidos con facturación
+        if(Object.keys(_unknownEstado).length>0){
+          console.warn(`  ⚠ ESTADOS NO RECONOCIDOS (facturación perdida):`, _unknownEstado);
+        }
+        // Filas saltadas con facturación
+        if(Object.keys(_skippedFact).length>0){
+          console.warn(`  ⚠ FILAS SALTADAS con facturación>0:`, _skippedFact);
+        }
+        console.groupEnd();
 
         // Volcar en arrays temporales — svcA = IDs únicos activos, svcCT = IDs únicos CT
         ALL_TERCS.forEach(t=>{
