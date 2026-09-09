@@ -369,8 +369,8 @@
 <script>
 // ═══ PALETA ═══
 const C={turquesa:'#00B0F0',turquesa2:'#00B5CB',magenta:'#FF44B0',naranja:'#FF6F42',morado:'#8B6FE8',morado2:'#AA7FD0',amarillo:'#FFA700',azulC:'#6EBEEB',azulC2:'#64B4F5',verde:'#34D399',naranja2:'#FF9A44',muted:'#9BBCD8'};
-const ALL_TERCS=['TELEFONICA','CNT','CIRION','PUNTONET','CLARO','C4','KONNET','SPEEDCAST','IFOTONCORP','ETAPA','TEUNO','SYSTRAY'];
-const TERC_COLORS={TELEFONICA:C.turquesa,CNT:C.magenta,CIRION:C.naranja,PUNTONET:C.morado,CLARO:C.amarillo,C4:C.azulC2,KONNET:C.azulC,SPEEDCAST:'#38BDF8',IFOTONCORP:'#C084FC',ETAPA:'#86EFAC',TEUNO:'#FCA5A5',SYSTRAY:'#34D399'};
+const ALL_TERCS=['TELEFONICA','CNT','CIRION','PUNTONET','CLARO','C4','KONNET','SPEEDCAST','IFOTONCORP','ETAPA','TEUNO','SYSTRAY','PIEDRAHUASI'];
+const TERC_COLORS={TELEFONICA:C.turquesa,CNT:C.magenta,CIRION:C.naranja,PUNTONET:C.morado,CLARO:C.amarillo,C4:C.azulC2,KONNET:C.azulC,SPEEDCAST:'#38BDF8',IFOTONCORP:'#C084FC',ETAPA:'#86EFAC',TEUNO:'#FCA5A5',SYSTRAY:'#34D399',PIEDRAHUASI:'#FB923C'};
 
 // ═══════════════════════════════════════════════════════════
 // DATASET ÚNICO — todo calculado desde aquí
@@ -405,8 +405,9 @@ Object.assign(FACT_MES,{
   SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,13031.94,16491.57,13031.94,13031.94,0,0,0,0,0],
   IFOTONCORP:[0,0,0,0,0,0,0,0,0,14631.68,14631.68,14631.68, 14631.68,14631.68,14631.68,14631.68,14631.68,14631.68, 4841.50,  287.50,  287.50,  250.00,    0.00,    0.00,    0.00,0,0,0,0,0],
   ETAPA:     [0,0,0,0,0,0,0,0,0,  179.37,  175.68,  179.37,   179.37,  175.68,  423.75,  412.25,  412.25,  110.37,  110.37,  110.37,  110.37,    0.00,    0.00,    0.00,    0.00,0,0,0,0,0],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  SYSTRAY:   [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  TEUNO:      [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  SYSTRAY:    [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  PIEDRAHUASI:[0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 });
 
 // ─── Datos Abr-26 exactos por tercerizadora ───
@@ -473,6 +474,7 @@ Object.assign(D,{
   ETAPA:{factA:0,factCT:0,fact:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
   TEUNO:{factA:0,factCT:0,fact:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
   SYSTRAY:{factA:0,factCT:0,fact:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
+  PIEDRAHUASI:{factA:0,factCT:0,fact:0,svcA:0,svcCT:0,cli:0,enlace:{PRINCIPAL:{svc:0,fact:0},BACKUP:{svc:0,fact:0},INFRAESTRUCTURA:{svc:0,fact:0}},cliente:{CORPORATIVO:{svc:0,fact:0},BANCA:{svc:0,fact:0}},tipo:{ULTIMA_MILLA:0,FIBRA_OSCURA:0,ULTIMA_MILLA_MIXTA:0,CAPACIDAD:0},detalle:{},clientes:[]},
 });
 // calc fact
 ALL_TERCS.forEach(t=>{D[t].fact=D[t].factA+D[t].factCT;});
@@ -509,8 +511,9 @@ Object.assign(CLI_MES,{
   SPEEDCAST: [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  5,  3,  3,0,0,0,0,0],
   IFOTONCORP:[0,0,0,0,0,0,0,0,0,  12,  12,  12,  12, 12, 12, 12, 12, 12,  2,  1,  1, 12,  0,  0,  0,0,0,0,0,0],
   ETAPA:     [0,0,0,0,0,0,0,0,0,   2,   2,   2,   2,  3,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,0,0,0,0,0],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0,0,0],
-  SYSTRAY:   [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0,0,0],
+  TEUNO:      [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0,0,0],
+  SYSTRAY:    [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0,0,0],
+  PIEDRAHUASI:[0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0,0,0],
 });
 // SVC_MES — base inicial
 const SVC_MES={};
@@ -526,8 +529,9 @@ Object.assign(SVC_MES,{
   SPEEDCAST: [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,   0,  76, 112,  76,  76,0,0,0,0,0],
   IFOTONCORP:[0,0,0,0,0,0,0,0,0,  14,  14,  14,  14, 14, 14, 14, 14, 14,  2,  1,   1,  14,   0,   0,   0,0,0,0,0,0],
   ETAPA:     [0,0,0,0,0,0,0,0,0,   4,   4,   4,   4,  5,  5,  4,  4,  3,  3,  3,   3,   0,   0,   0,   0,0,0,0,0,0],
-  TEUNO:     [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,0,0,0,0,0],
-  SYSTRAY:   [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,0,0,0,0,0],
+  TEUNO:      [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,0,0,0,0,0],
+  SYSTRAY:    [0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,0,0,0,0,0],
+  PIEDRAHUASI:[0,0,0,0,0,0,0,0,0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,0,0,0,0,0],
 });
 
 // FACT_CT_MES — base inicial
@@ -1375,7 +1379,8 @@ function buildChips(){
       'telefónica':'TELEFONICA','telefonica':'TELEFONICA','cnt':'CNT','cirion':'CIRION',
       'puntonet':'PUNTONET','claro':'CLARO','c4':'C4','grupo concha':'C4',
       'konnet':'KONNET','etapa':'ETAPA','ifotoncorp':'IFOTONCORP','teuno':'TEUNO',
-      'speedcast':'SPEEDCAST','starlink':'SPEEDCAST','systray':'SYSTRAY'
+      'speedcast':'SPEEDCAST','starlink':'SPEEDCAST','systray':'SYSTRAY',
+      'piedrahuasi':'PIEDRAHUASI'
     };
 
     function normTerc(t){
