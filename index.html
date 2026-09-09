@@ -1411,10 +1411,22 @@ function buildChips(){
       const hasDot=str.includes('.');
       const hasComma=str.includes(',');
       if(hasDot && hasComma){
-        if(str.lastIndexOf('.')>str.lastIndexOf(','))
+        const lastDot=str.lastIndexOf('.');
+        const lastComma=str.lastIndexOf(',');
+        if(lastDot>lastComma){
+          // Formato anglosajón: 1,372.91 → quitar comas
           str=str.replace(/,/g,'');
-        else
-          str=str.replace(/\./g,'').replace(',','.');
+        } else {
+          // Formato europeo: 1.372,91 → quitar puntos, coma→punto
+          // Verificar que el punto es separador de miles (3 dígitos después)
+          const afterDot=str.substring(lastDot+1,lastComma);
+          if(afterDot.length===3){
+            str=str.replace(/\./g,'').replace(',','.');
+          } else {
+            // Punto es decimal: 1.37,291 — caso raro, tratar coma como miles
+            str=str.replace(/,/g,'');
+          }
+        }
       } else if(hasComma && !hasDot){
         const parts=str.split(',');
         if(parts.length===2 && parts[1].length<=2)
