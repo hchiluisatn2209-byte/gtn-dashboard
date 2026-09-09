@@ -405,7 +405,7 @@ Object.assign(FACT_MES,{
   SPEEDCAST: [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,13031.94,16491.57,13031.94,13031.94,0,0,0,0,13290.20],
   IFOTONCORP:[0,0,0,0,0,0,0,0,0,14631.68,14631.68,14631.68, 14631.68,14631.68,14631.68,14631.68,14631.68,14631.68, 4841.50,  287.50,  287.50,  250.00,    0.00,    0.00,    0.00,0,0,0,0,    0.00],
   ETAPA:     [0,0,0,0,0,0,0,0,0,  179.37,  175.68,  179.37,   179.37,  175.68,  423.75,  412.25,  412.25,  110.37,  110.37,  110.37,  110.37,    0.00,    0.00,    0.00,    0.00,0,0,0,0,    0.00],
-  TEUNO:      [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19591.29],
+  TEUNO:      [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19591.29], // factA=19550.21 + factCT=41.08
   SYSTRAY:    [0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  230.01],
   PIEDRAHUASI:[0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1748.00],
 });
@@ -1673,15 +1673,25 @@ function buildChips(){
       }
 
       // ── Escribir en las matrices globales SOLO si la hoja tiene datos reales ──
-      // Usar undefined como centinela: si tmpFact[t][i] es undefined → hoja vacía → no sobreescribir
+      // Usar Math.max para respetar el hardcoded cuando el sheet exporta menos filas que las reales
+      // (ej: Google Sheets no exporta todas las filas al CSV por límites de exportación)
       ALL_TERCS.forEach(t=>{
         for(let i=0;i<SHEET_NAMES.length;i++){
           const absIdx=BASE_ABS+i;
-          // Solo sobreescribir si la hoja tenía filas (tmpFact[t][i] !== undefined)
-          if(tmpFact[t][i]!==undefined && FACT_MES[t])    FACT_MES[t][absIdx]    = tmpFact[t][i];
+          if(tmpFact[t][i]!==undefined && FACT_MES[t]){
+            // Usar el MAYOR valor entre el hardcoded y el leído del sheet
+            // Esto protege contra exportaciones CSV incompletas de Google Sheets
+            const hardcoded = FACT_MES[t][absIdx]||0;
+            const fromSheet = tmpFact[t][i]||0;
+            FACT_MES[t][absIdx] = Math.max(hardcoded, fromSheet);
+          }
           if(tmpSvc[t][i] !==undefined && SVC_MES[t])     SVC_MES[t][absIdx]     = tmpSvc[t][i];
           if(tmpCli[t][i] !==undefined && CLI_MES[t])     CLI_MES[t][absIdx]     = tmpCli[t][i];
-          if(tmpCT[t][i]  !==undefined && FACT_CT_MES[t]) FACT_CT_MES[t][absIdx] = tmpCT[t][i];
+          if(tmpCT[t][i]  !==undefined && FACT_CT_MES[t]){
+            const hardcodedCT = FACT_CT_MES[t][absIdx]||0;
+            const fromSheetCT = tmpCT[t][i]||0;
+            FACT_CT_MES[t][absIdx] = Math.max(hardcodedCT, fromSheetCT);
+          }
         }
       });
 
